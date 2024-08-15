@@ -1,0 +1,6 @@
+@AnprDataProcessor_HostAddress = http://localhost:5001
+
+GET {{AnprDataProcessor_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
