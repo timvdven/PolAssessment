@@ -34,8 +34,10 @@ public class AnprHandler : IAnprHandler
         if (!File.Exists(e.FullPath))
         {
             // Must be a directory
+            _logger.LogInformation("[AnprHandler] New directory (?) detected: {FullPath}", e.FullPath);
             return;
         }
+        _logger.LogInformation("[AnprHandler] New file detected: {FullPath}", e.FullPath);
         var anprData = _anprReader.ReadAnprData(e.FullPath);
         OnAnprRead(new AnprEventArgs(anprData));
     }

@@ -10,6 +10,7 @@ internal class AnprEnrichedDataSender
     public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IEnricherCollection enrichers)
     {
         _logger = logger;
+        _logger.LogInformation("AnprEnrichedDataSender created, starting service...");
         enrichers.FinishedEnrichedData += EnricherCollection_FinishedEnrichedData;
     }
 

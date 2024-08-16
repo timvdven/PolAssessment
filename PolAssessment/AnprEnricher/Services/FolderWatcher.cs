@@ -19,7 +19,7 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
 {
     private readonly ILogger<FolderWatcher> _logger = logger;
 
-    public void SetBaseSettings()
+    private void SetBaseSettings()
     {
         NotifyFilter = NotifyFilters.CreationTime
             | NotifyFilters.DirectoryName
@@ -27,6 +27,7 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
 
         IncludeSubdirectories = true;
         EnableRaisingEvents = true;
+        _logger.LogInformation("FolderWatcher is watching: {path}", Path);
     }
 
     #region Factory
@@ -47,7 +48,10 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
         var candidate = new DirectoryInfo(path);
         if (!candidate.Exists)
         {
-            throw new DirectoryNotFoundException($"Directory not found: {path}");
+            var dirInfo = Directory.CreateDirectory(path);
+            logger.LogInformation("Created directory: {path}", dirInfo.FullName);  
+
+            // throw new DirectoryNotFoundException($"Directory not found: {path}, {assemblyPath}");
         }
 
         logger.LogInformation("{name} is watching folder: {path}", name, candidate.FullName);

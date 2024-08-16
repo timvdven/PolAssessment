@@ -4,9 +4,11 @@ using Microsoft.Extensions.Logging;
 using PolAssessment.AnprEnricher.Services;
 using PolAssessment.AnprEnricher.Services.Enrichers;
 
+
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddJsonFile("appsettingsSecrets.json", optional:true)
+    .AddEnvironmentVariables()
     .Build();
 
 var serviceProvider = new ServiceCollection()
@@ -28,5 +30,5 @@ var serviceProvider = new ServiceCollection()
 serviceProvider.GetRequiredService<TgzUnpacker>();
 serviceProvider.GetRequiredService<AnprEnrichedDataSender>();
 
-Console.WriteLine("Press enter to exit.");
-Console.ReadLine();
+Console.WriteLine("Press 'q' to quit.");
+while (Console.Read() != 'q') ;

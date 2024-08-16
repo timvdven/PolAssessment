@@ -133,3 +133,4 @@ $RECYCLE.BIN/
 _NCrunch*
 .vs
 .HotFolders
+appsettingsSecrets.json

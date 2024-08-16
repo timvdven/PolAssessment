@@ -21,15 +21,36 @@ public class TgzUnpacker
 
     private void HotFolderWatcher_Created(object sender, FileSystemEventArgs e)
     {
-        HandleNewFile(e.FullPath, _configuration.GetMaxRetriesForReadingFile());
+        _logger.LogInformation("[TgzUnpacker] New file detected: {FullPath}", e.FullPath);
+        try
+        {
+            _logger.LogInformation("Handling new file: {FullPath}", e.FullPath);
+            HandleNewFile(e.FullPath, _configuration.GetMaxRetriesForReadingFile());
+        } 
+        catch (Exception ex)
+        {
+            _logger.LogInformation("Error while handling new file: {FullPath}", ex.InnerException);
+            _logger.LogError(ex, "Error: {x}", ex.InnerException);
+        }
     }
 
-    private void HandleNewFile(string fullPath, int trial)
+    private async void HandleNewFile(string fullPath, int trial)
     {
         try
         {
-            var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.None) ?? throw new MissingFieldException(nameof(fullPath));
-            Unpack(stream);
+            _logger.LogInformation("Opening file: {FullPath}, trial: {trial}", fullPath, trial);
+            using var stream = File.OpenRead(fullPath);
+
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            var amountOfEntries = await Unpack(memoryStream);
+
+            if (amountOfEntries == 0)
+            {
+                throw new EndOfStreamException();
+            }
         }
         catch(IOException) when (trial > 0)
         {
@@ -37,22 +58,34 @@ public class TgzUnpacker
             Thread.Sleep(_configuration.GetTimeOutForRetry());
             HandleNewFile(fullPath, trial - 1);
         }
+        catch(EndOfStreamException) when (trial > 0)
+        {
+            _logger.LogWarning("No entries found in the file. {trial} attempts left. Retrying...", trial);
+            Thread.Sleep(_configuration.GetTimeOutForRetry());
+            HandleNewFile(fullPath, trial - 1);
+        }
     }
 
-    public async void Unpack(Stream tgzStream)
+    public async Task<int> Unpack(Stream tgzStream)
     {
         using var gzip = new GZipStream(tgzStream, CompressionMode.Decompress);
-        using var unzippedStream = new MemoryStream();
 
+        using var unzippedStream = new MemoryStream();
         await gzip.CopyToAsync(unzippedStream);
         unzippedStream.Seek(0, SeekOrigin.Begin);
 
         using var reader = new TarReader(unzippedStream);
 
-        while (reader.GetNextEntry() is TarEntry entry)
+        int amountOfEntries = 0;
+        _logger.LogInformation("Reading entries...");
+        while (await reader.GetNextEntryAsync(copyData: true) is TarEntry entry)
         {
+            amountOfEntries++;
             HandleEntry(entry);
         }
+        _logger.LogInformation("Finished reading entries with {entries} entries.", amountOfEntries);
+
+        return amountOfEntries;
     }
 
     private void HandleEntry(TarEntry entry)
@@ -61,12 +94,15 @@ public class TgzUnpacker
 
         if (entry.EntryType == TarEntryType.Directory)
         {
+            _logger.LogInformation("Entry is a directory: {Name}", entry.Name);
             if (entry.Name.Trim(['.', '/', '\\']).Length == 0)
             {
+                _logger.LogInformation("Entry is root directory: ignore");
                 // Must be root directory: ignore
                 return;
             }
 
+            _logger.LogInformation("Creating directory: {Name}", entry.Name);
             Directory.CreateDirectory(Path.Combine(path, entry.Name));
             return;
         }

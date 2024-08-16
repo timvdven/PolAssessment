@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AnprEnricher": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

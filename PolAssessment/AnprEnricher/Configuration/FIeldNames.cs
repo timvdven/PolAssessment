@@ -6,7 +6,7 @@ internal static class FieldNames
     public const string HotFolderDataPath = "HotFolderDataPath";
     public const string MaxRetriesForReadingFile = "MaxRetriesForReadingFile";
     public const string TimeOutForRetry = "TimeOutForRetry";
-    public const string VehicleEnricherUrl = "VehicleEnricher.Url";
-    public const string LocationEnricherUrl = "LocationEnricher.Url";
-    public const string LocationEnricherApiKey = "LocationEnricher.ApiKey";
+    public const string VehicleEnricherUrl = "VehicleEnricherUrl";
+    public const string LocationEnricherUrl = "LocationEnricherUrl";
+    public const string LocationEnricherApiKey = "LocationEnricherApiKey";
 }
