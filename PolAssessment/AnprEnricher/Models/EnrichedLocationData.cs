@@ -2,8 +2,7 @@
 
 namespace PolAssessment.AnprEnricher.Models;
 
-[JsonConverter(typeof(EnrichedLocationData))]
-public class EnrichedLocationData : EnrichedBaseData
+public class EnrichedLocationData
 {
     [JsonPropertyName("street")]
     public string? Street { get; set; }

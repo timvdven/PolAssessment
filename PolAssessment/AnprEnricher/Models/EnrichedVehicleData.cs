@@ -2,9 +2,9 @@
 
 namespace PolAssessment.AnprEnricher.Models;
 
-public class EnrichedVehicleData : EnrichedBaseData
+public class EnrichedVehicleData
 {
-    [JsonPropertyName("licensePlate")]
+    [JsonPropertyName("technicalName")]
     public string? TechnicalName { get; set; }
 
     [JsonPropertyName("brandName")]

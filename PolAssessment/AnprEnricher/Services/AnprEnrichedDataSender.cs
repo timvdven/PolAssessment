@@ -7,15 +7,18 @@ internal class AnprEnrichedDataSender
 {
     private readonly ILogger<AnprEnrichedDataSender> _logger;
 
-    public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IEnricherCollection enricherCollection)
+    public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IEnricherCollection enrichers)
     {
         _logger = logger;
-        enricherCollection.FinishedEnrichedData += EnricherCollection_FinishedEnrichedData;
+        enrichers.FinishedEnrichedData += EnricherCollection_FinishedEnrichedData;
     }
 
     private void EnricherCollection_FinishedEnrichedData(object? sender, EnricherCollection.EnrichedDataEventArgs e)
     {
+        // TODO: Send enriched data to the next step in the pipeline
+
         var body = JsonSerializer.Serialize(e.EnrichedData);
+
         _logger.LogInformation("Sending enriched data: {body}", body);
     }
 }

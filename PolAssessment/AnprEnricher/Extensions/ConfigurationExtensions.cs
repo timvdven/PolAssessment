@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using PolAssessment.AnprEnricher.Configuration;
+using System.Globalization;
 
 namespace PolAssessment.AnprEnricher.Extensions;
 
@@ -35,5 +36,38 @@ public static class ConfigurationExtensions
             return timeOut;
         }
         return 500;
+    }
+
+    public static string GetVehicleEnricherUrl(this IConfiguration config)
+    {
+        var result = config[FieldNames.VehicleEnricherUrl];
+        return result ?? throw new MissingFieldException(FieldNames.VehicleEnricherUrl);
+    }
+
+    public static string GetVehicleEnricherUrl(this IConfiguration config, string numberPlate)
+    {
+        var rawString = GetVehicleEnricherUrl(config);
+        return string.Format(rawString, numberPlate);
+    }
+
+    public static string GetLocationEnricherUrl(this IConfiguration config)
+    {
+        var result = config[FieldNames.LocationEnricherUrl];
+        return result ?? throw new MissingFieldException(FieldNames.LocationEnricherUrl);
+    }
+
+    public static string GetLocationEnricherApiKey(this IConfiguration config)
+    {
+        var result = config[FieldNames.LocationEnricherApiKey];
+        return result ?? throw new MissingFieldException(FieldNames.LocationEnricherApiKey);
+    }
+
+    public static string GetLocationEnricherUrl(this IConfiguration config, double latitude, double longitude)
+    {
+        var apiKey = GetLocationEnricherApiKey(config);
+
+        var rawString = GetLocationEnricherUrl(config);
+
+        return string.Format(CultureInfo.InvariantCulture, rawString, latitude, longitude, apiKey);
     }
 }

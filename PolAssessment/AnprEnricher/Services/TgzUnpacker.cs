@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-
-//using Microsoft.Extensions.Logging;
 using PolAssessment.AnprEnricher.Extensions;
 using System.Formats.Tar;
 using System.IO.Compression;
@@ -12,6 +10,7 @@ public class TgzUnpacker
 {
     private readonly ILogger<TgzUnpacker> _logger;
     private readonly IConfiguration _configuration;
+    private readonly object _lock = new();
 
     public TgzUnpacker(IConfiguration configuration, IHotFolderWatcherTgz hotFolderWatcher, ILogger<TgzUnpacker> logger)
     {
@@ -52,12 +51,48 @@ public class TgzUnpacker
 
         while (reader.GetNextEntry() is TarEntry entry)
         {
-            _logger.LogInformation("Entry name: {Name}, entry type: {EntryType}", entry.Name, entry.EntryType);
-
-            if (entry.Name.Length > 3 )
-            {
-                entry.ExtractToFile(destinationFileName: Path.Join(_configuration.GetHotFolderDataPath(), entry.Name), overwrite: true);
-            }
+            HandleEntry(entry);
         }
+    }
+
+    private void HandleEntry(TarEntry entry)
+    {
+        var path = _configuration.GetHotFolderDataPath();
+
+        if (entry.EntryType == TarEntryType.Directory)
+        {
+            if (entry.Name.Trim(['.', '/', '\\']).Length == 0)
+            {
+                // Must be root directory: ignore
+                return;
+            }
+
+            Directory.CreateDirectory(Path.Combine(path, entry.Name));
+            return;
+        }
+
+        lock (_lock)
+        {
+            _logger.LogInformation("Entry name: {Name}, entry type: {EntryType}", entry.Name, entry.EntryType);
+            var fullPath = GetUniqueFullPath(path, entry.Name);
+            entry.ExtractToFile(destinationFileName: fullPath, overwrite: true);
+        }
+    }
+
+    private static string GetUniqueFullPath(string path, string filename)
+    {
+        ArgumentNullException.ThrowIfNull(path, nameof(path));
+        ArgumentNullException.ThrowIfNull(filename, nameof(filename));
+
+        var uniquePath = Path.Combine(path, filename);
+        var counter = 1;
+
+        while (File.Exists(uniquePath))
+        {
+            uniquePath = Path.Combine(path, $"{Path.GetFileNameWithoutExtension(filename)}_{counter}{Path.GetExtension(filename)}");
+            counter++;
+        }
+
+        return uniquePath;
     }
 }

@@ -23,33 +23,34 @@ public class EnricherCollection : IEnricherCollection
 
     public event EventHandler<EnrichedDataEventArgs>? FinishedEnrichedData;
 
-    public IEnumerable<EnrichedBaseData> EnrichedData { get; set; } = [];
-
     protected virtual void OnFinishedEnrichedData(EnrichedDataEventArgs e)
     {
         _logger.LogInformation("Finished enriching ANPR data.");
         FinishedEnrichedData?.Invoke(this, e);
     }
 
-    private void AnprHandler_NewAnprDataRead(object? sender, AnprHandler.AnprEventArgs e)
+    private async void AnprHandler_NewAnprDataRead(object? sender, AnprHandler.AnprEventArgs e)
     {
-        EnrichedData = Enrich(e.Data);
-        OnFinishedEnrichedData(new EnrichedDataEventArgs(EnrichedData));
+        await EnrichAnprData(e.Data);
     }
 
-    public IEnumerable<EnrichedBaseData> Enrich(AnprData data)
+    public async Task EnrichAnprData(AnprData data)
     {
-        var result = new List<EnrichedBaseData>();
+        var enrichedDataCollection = new Dictionary<string, object>
+        {
+            { nameof(AnprData), data }
+        };
+
         foreach (var enricher in _enrichers)
         {
-            var enrichedData = enricher.Enrich(data);
-            result.Add(enrichedData);
+            var enrichedData = await enricher.Enrich(data);
+            enrichedDataCollection.Add(enrichedData.GetType().Name, enrichedData);
         }
-        return result;
+        OnFinishedEnrichedData(new EnrichedDataEventArgs(enrichedDataCollection));
     }
 
-    public class EnrichedDataEventArgs(IEnumerable<EnrichedBaseData> enrichedData) : EventArgs
+    public class EnrichedDataEventArgs(Dictionary<string, object> enrichedData) : EventArgs
     {
-        public IEnumerable<EnrichedBaseData> EnrichedData { get; } = enrichedData;
+        public Dictionary<string, object> EnrichedData { get; } = enrichedData;
     }
 }

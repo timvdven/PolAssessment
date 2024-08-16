@@ -6,6 +6,7 @@ using PolAssessment.AnprEnricher.Services.Enrichers;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettingsSecrets.json", optional:true)
     .Build();
 
 var serviceProvider = new ServiceCollection()
@@ -20,6 +21,8 @@ var serviceProvider = new ServiceCollection()
     .AddScoped<IEnricher, LocationDataEnricher>()
     .AddScoped<IEnricher, VehicleDataEnricher>()
     .AddScoped<AnprEnrichedDataSender>()
+    .AddHttpClient()
+    .AddAutoMapper(typeof(Program))
     .BuildServiceProvider();
 
 serviceProvider.GetRequiredService<TgzUnpacker>();

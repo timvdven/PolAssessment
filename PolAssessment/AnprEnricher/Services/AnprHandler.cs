@@ -31,6 +31,11 @@ public class AnprHandler : IAnprHandler
 
     private void FolderWatcher_Created(object sender, FileSystemEventArgs e)
     {
+        if (!File.Exists(e.FullPath))
+        {
+            // Must be a directory
+            return;
+        }
         var anprData = _anprReader.ReadAnprData(e.FullPath);
         OnAnprRead(new AnprEventArgs(anprData));
     }
