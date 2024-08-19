@@ -25,20 +25,20 @@ ENV HotFolderTgzPath="HotFolders/HotFolderTgz"
 ENV HotFolderDataPath="HotFolders/HotFolderData"
 
 # Install Filebrowser | Only necessary for Windows hosts
-RUN apt-get update && apt-get install -y wget && \
-    wget -O /tmp/filebrowser.tar.gz https://github.com/filebrowser/filebrowser/releases/download/v2.23.0/linux-amd64-filebrowser.tar.gz && \
-    tar -xzf /tmp/filebrowser.tar.gz -C /usr/local/bin && \
-    rm /tmp/filebrowser.tar.gz
+# RUN apt-get update && apt-get install -y wget && \
+#     wget -O /tmp/filebrowser.tar.gz https://github.com/filebrowser/filebrowser/releases/download/v2.23.0/linux-amd64-filebrowser.tar.gz && \
+#     tar -xzf /tmp/filebrowser.tar.gz -C /usr/local/bin && \
+#     rm /tmp/filebrowser.tar.gz
 
 # Start the application | not working on Windows hosts
-#ENTRYPOINT ["dotnet", "PolAssessment.AnprEnricher.dll"]
+ENTRYPOINT ["dotnet", "PolAssessment.AnprEnricher.dll"]
 
 # Run the application with bind mount | not working on Windows hosts
 # docker run -v /path/on/your/host:/app/HotFolders containerId
 
 
 # Start Filebrowser and the application | Only for Windows hosts
-CMD ["sh", "-c", "filebrowser -r /app/HotFolders --port 8080 --address 0.0.0.0 & dotnet PolAssessment.AnprEnricher.dll"]
+#CMD ["sh", "-c", "filebrowser -r /app/HotFolders --port 8080 --address 0.0.0.0 & dotnet PolAssessment.AnprEnricher.dll"]
 
 # Run the application with filebrowser | Only for Windows hosts
 # docker run -d -p 8080:8080 containerId

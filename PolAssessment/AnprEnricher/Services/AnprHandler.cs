@@ -1,4 +1,5 @@
 ﻿//using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PolAssessment.AnprEnricher.Models;
 
@@ -38,8 +39,15 @@ public class AnprHandler : IAnprHandler
             return;
         }
         _logger.LogInformation("[AnprHandler] New file detected: {FullPath}", e.FullPath);
-        var anprData = _anprReader.ReadAnprData(e.FullPath);
-        OnAnprRead(new AnprEventArgs(anprData));
+        try
+        {
+            var anprData = _anprReader.ReadAnprData(e.FullPath);
+            OnAnprRead(new AnprEventArgs(anprData));
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Error while reading ANPR data: {FullPath}", e.FullPath);
+        }
     }
 
     public class AnprEventArgs(AnprData data) : EventArgs

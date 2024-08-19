@@ -4,12 +4,13 @@ using Microsoft.Extensions.Logging;
 using PolAssessment.AnprEnricher.Services;
 using PolAssessment.AnprEnricher.Services.Enrichers;
 
-
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
-    .AddJsonFile("appsettingsSecrets.json", optional:true)
+    .AddJsonFile("appsettingsSecrets.json", optional: true)
     .AddEnvironmentVariables()
     .Build();
+
+System.Console.WriteLine(configuration["HotFolderTgzPath"]);
 
 var serviceProvider = new ServiceCollection()
     .AddLogging(logging => logging.AddConsole())

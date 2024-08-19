@@ -64,6 +64,14 @@ public class TgzUnpacker
             Thread.Sleep(_configuration.GetTimeOutForRetry());
             HandleNewFile(fullPath, trial - 1);
         }
+        catch(EndOfStreamException ex) when (trial == 0)
+        {
+            _logger.LogError(ex, "No entries found in the file. No more attempts left.");
+        }
+        catch(InvalidDataException ex)
+        {
+            _logger.LogError("InvalidDataException: {stacktrace}", ex.InnerException);
+        }
     }
 
     public async Task<int> Unpack(Stream tgzStream)
