@@ -1,15 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using PolAssessment.AnprDataProcessor.DbContexts;
-using PolAssessment.AnprDataProcessor.Models;
 using PolAssessment.AnprDataProcessor.Services;
 using System.Data.Entity;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace PolAssessment.AnprDataProcessor.Controllers
 {
@@ -22,20 +15,12 @@ namespace PolAssessment.AnprDataProcessor.Controllers
         private readonly IAuthTokenHandler _authTokenHandler = authTokenHandler;
 
         [HttpGet]
-        public async Task<ActionResult<string>> Get()
+        public ActionResult<string> Get(
+            [FromHeader(Name = "Client-Id")] string clientId,
+            [FromHeader(Name = "Client-Secret")] string clientSecret)
         {
-            Request.Headers.TryGetValue("Client-Id", out var clientIds);
-            Request.Headers.TryGetValue("Client-Secret", out var clientSecrets);
-
-            if (clientIds.Count == 0 || clientSecrets.Count == 0)
-            {
-                return Unauthorized();
-            }
-
-            var clientId = clientIds.FirstOrDefault();
-            var clientSecret = clientSecrets.FirstOrDefault();
-
-            var candidateUser = await _anprDataDbContext.UploadUsers.FirstOrDefaultAsync(x => x.ClientId == clientId && x.ClientSecret == clientSecret);
+            var candidateUser = _anprDataDbContext.UploadUsers.FirstOrDefault(x => x.ClientId == clientId && x.ClientSecret == clientSecret);
+            
             if (candidateUser == null)
             {
                 return Unauthorized();

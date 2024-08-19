@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using PolAssessment.AnprDataProcessor.Extensions;
 using PolAssessment.AnprDataProcessor.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,24 +16,19 @@ public class AuthTokenHandler(IConfiguration configuration) : JwtSecurityTokenHa
 {
     private readonly IConfiguration _configuration = configuration;
 
-    private string GetKeyString() => _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.");
-    private byte[] GetKey() => Encoding.UTF8.GetBytes(GetKeyString());
-    private SymmetricSecurityKey GetSymmetricSecurityKey() => new(GetKey());
+    private SymmetricSecurityKey GetSymmetricSecurityKey() => new(_configuration.GetJwtKey());
     private SigningCredentials GetSigningCredentials() => new(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature);
-
-    private string GetExpireMinutesString() => _configuration["Jwt:ExpireMinutes"] ?? throw new InvalidOperationException("JWT ExpireMinutes is not configured.");
-    private double GetExpireMinutes() => double.Parse(GetExpireMinutesString());
 
     public string GenerateToken(UploadUser uploadUser)
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
+            Subject = new ClaimsIdentity(
+            [
                 new(ClaimTypes.Name, uploadUser.ClientId),
                 new(ClaimTypes.NameIdentifier, uploadUser.Id.ToString())
-            }),
-            Expires = DateTime.UtcNow.AddMinutes(GetExpireMinutes()),
+            ]),
+            Expires = DateTime.UtcNow.AddMinutes(_configuration.GetJwtExpireMinutes()),
             SigningCredentials = GetSigningCredentials()
         };
         var token = CreateToken(tokenDescriptor);

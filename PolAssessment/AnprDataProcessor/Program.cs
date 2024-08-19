@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PolAssessment.AnprDataProcessor.DbContexts;
+using PolAssessment.AnprDataProcessor.Extensions;
 using PolAssessment.AnprDataProcessor.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +12,35 @@ builder.Services.AddControllers();
 
 builder.Services
     .AddEndpointsApiExplorer()
-    .AddSwaggerGen()
+    .AddSwaggerGen(x =>
+    {
+        x.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+        x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+
+        x.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme{
+                    Reference = new OpenApiReference{
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    })
     
     .AddDbContext<AnprDataDbContext>(x => 
-        x.UseMySQL(builder.Configuration["MySQL:ConnectionString"]
-            ?? throw new InvalidOperationException("MySQL is not configured."))
+        x.UseMySQL(builder.Configuration.GetMysqlConnectionString())
     )
     .AddScoped<IAuthTokenHandler, AuthTokenHandler>()
 
@@ -28,15 +53,13 @@ builder.Services
     {
         x.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
-                    ?? throw new InvalidOperationException("JWT Key is not configured.")))
+            ValidateIssuerSigningKey = false,
+            ValidIssuer = builder.Configuration.GetJwtIssuer(),
+            ValidAudience = builder.Configuration.GetJwtAudience(),
+            IssuerSigningKey = new SymmetricSecurityKey(builder.Configuration.GetJwtKey()),
         };
     });
 
