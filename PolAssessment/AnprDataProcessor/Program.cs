@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,8 +8,6 @@ using PolAssessment.AnprDataProcessor.Extensions;
 using PolAssessment.AnprDataProcessor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllers();
 
 builder.Services
     .AddEndpointsApiExplorer()
@@ -40,7 +39,8 @@ builder.Services
     })
     
     .AddDbContext<AnprDataDbContext>(x => 
-        x.UseMySQL(builder.Configuration.GetMysqlConnectionString())
+        x.UseMySql(builder.Configuration.GetDatabaseConnectionString(), 
+            ServerVersion.AutoDetect(builder.Configuration.GetDatabaseConnectionString()))
     )
     .AddScoped<IAuthTokenHandler, AuthTokenHandler>()
 
@@ -53,15 +53,17 @@ builder.Services
     {
         x.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = false,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration.GetJwtIssuer(),
             ValidAudience = builder.Configuration.GetJwtAudience(),
             IssuerSigningKey = new SymmetricSecurityKey(builder.Configuration.GetJwtKey()),
         };
     });
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -74,8 +76,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

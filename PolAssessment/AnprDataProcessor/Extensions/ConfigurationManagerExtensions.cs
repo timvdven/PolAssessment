@@ -4,10 +4,10 @@ namespace PolAssessment.AnprDataProcessor.Extensions;
 
 public static class ConfigurationManagerExtensions
 {
-    public static string GetMysqlConnectionString(this IConfiguration configuration)
+    public static string GetDatabaseConnectionString(this IConfiguration configuration)
     {
-        return configuration["MySQL:ConnectionString"]
-            ?? throw new InvalidOperationException("MySQL is not configured.");
+        return configuration["Database:ConnectionString"]
+            ?? throw new InvalidOperationException("Database is not configured.");
     }
 
     public static string GetJwtIssuer(this IConfiguration configuration)

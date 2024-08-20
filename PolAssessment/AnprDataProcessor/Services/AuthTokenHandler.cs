@@ -17,12 +17,14 @@ public class AuthTokenHandler(IConfiguration configuration) : JwtSecurityTokenHa
     private readonly IConfiguration _configuration = configuration;
 
     private SymmetricSecurityKey GetSymmetricSecurityKey() => new(_configuration.GetJwtKey());
-    private SigningCredentials GetSigningCredentials() => new(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature);
+    private SigningCredentials GetSigningCredentials() => new(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
 
     public string GenerateToken(UploadUser uploadUser)
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
+            Audience = _configuration.GetJwtAudience(),
+            Issuer = _configuration.GetJwtIssuer(),
             Subject = new ClaimsIdentity(
             [
                 new(ClaimTypes.Name, uploadUser.ClientId),
