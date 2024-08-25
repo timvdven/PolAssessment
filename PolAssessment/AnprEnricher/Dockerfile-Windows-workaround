@@ -1,0 +1,29 @@
+# Use official .NET SDK image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy csproj and restore
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy everything else and build
+COPY . .
+RUN dotnet publish "AnprEnricher.csproj" -c Release -o /app
+
+# Use official .NET runtime image
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+WORKDIR /app
+COPY --from=build /app .
+
+# Set overruling environment variables
+ENV HotFolderTgzPath="HotFolders/HotFolderTgz"
+ENV HotFolderDataPath="HotFolders/HotFolderData"
+
+# Install Filebrowser | Only necessary for Windows hosts
+RUN apt-get update && apt-get install -y wget && \
+    wget -O /tmp/filebrowser.tar.gz https://github.com/filebrowser/filebrowser/releases/download/v2.23.0/linux-amd64-filebrowser.tar.gz && \
+    tar -xzf /tmp/filebrowser.tar.gz -C /usr/local/bin && \
+    rm /tmp/filebrowser.tar.gz
+
+# Start Filebrowser and the application | Only for Windows hosts
+CMD ["sh", "-c", "filebrowser -r /app/HotFolders --port 8080 --address 0.0.0.0 & dotnet PolAssessment.AnprEnricher.dll"]

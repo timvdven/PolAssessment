@@ -1,0 +1,12 @@
+services:
+  anpr-enricher:
+    image: anpr-enricher
+    container_name: anpr-enricher-container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - pol-assessment-network
+
+networks:
+  pol-assessment-network:
+    external: true

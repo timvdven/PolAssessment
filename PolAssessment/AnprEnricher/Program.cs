@@ -10,16 +10,14 @@ var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-System.Console.WriteLine(configuration["HotFolderTgzPath"]);
-
 var serviceProvider = new ServiceCollection()
     .AddLogging(logging => logging.AddConsole())
     .AddSingleton<IConfiguration>(_ => configuration)
     .AddSingleton<IHotFolderWatcherTgz>(FolderWatcher.CreateHotFolderWatcher<IHotFolderWatcherTgz>)
     .AddSingleton<IHotFolderWatcherData>(FolderWatcher.CreateHotFolderWatcher<IHotFolderWatcherData>)
     .AddScoped<TgzUnpacker>()
-    .AddScoped<IAnprReader, AnprReader>()
     .AddScoped<IAnprHandler, AnprHandler>()
+    .AddScoped<IAnprReader, AnprReader>()
     .AddScoped<IEnricherCollection, EnricherCollection>()
     .AddScoped<IEnricher, LocationDataEnricher>()
     .AddScoped<IEnricher, VehicleDataEnricher>()
