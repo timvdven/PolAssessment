@@ -6,15 +6,15 @@ namespace PolAssessment.AnprEnricher.Services;
 
 public interface IEnricherCollection
 {
-    event EventHandler<EnricherCollection.EnrichedDataEventArgs> FinishedEnrichedData;
+    event EventHandler<EnricherCollectionHandler.EnrichedDataEventArgs> FinishedEnrichedData;
 }
 
-public class EnricherCollection : IEnricherCollection
+public class EnricherCollectionHandler : IEnricherCollection
 {
-    private readonly ILogger<EnricherCollection> _logger;
+    private readonly ILogger<EnricherCollectionHandler> _logger;
     private readonly IEnumerable<IEnricher> _enrichers;
 
-    public EnricherCollection(ILogger<EnricherCollection> logger, IEnumerable<IEnricher> enrichers, IAnprHandler anprHandler)
+    public EnricherCollectionHandler(ILogger<EnricherCollectionHandler> logger, IEnumerable<IEnricher> enrichers, IFileHandler anprHandler)
     {
         _logger = logger;
         _enrichers = enrichers;
@@ -23,13 +23,13 @@ public class EnricherCollection : IEnricherCollection
 
     public event EventHandler<EnrichedDataEventArgs>? FinishedEnrichedData;
 
-    protected virtual void OnFinishedEnrichedData(EnrichedDataEventArgs e)
+    private void OnFinishedEnrichedData(EnrichedDataEventArgs e)
     {
         _logger.LogInformation("Finished enriching ANPR data.");
         FinishedEnrichedData?.Invoke(this, e);
     }
 
-    private async void AnprHandler_NewAnprDataRead(object? sender, AnprHandler.AnprEventArgs e)
+    private async void AnprHandler_NewAnprDataRead(object? sender, FileHandler.AnprDataEventArgs e)
     {
         await EnrichAnprData(e.Data);
     }

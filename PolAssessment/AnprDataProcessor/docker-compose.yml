@@ -4,9 +4,10 @@ services:
     container_name: anprdataprocessor-container
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
+      - Database__ConnectionString=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
     ports:
-      - "5000:80"
+      - "5100:8080"
+      - "5101:8081"
     networks:
       - pol-assessment-network
 

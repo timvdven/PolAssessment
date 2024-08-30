@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions;
+using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
 
 namespace PolAssessment.AnprEnricher.Services;
 
@@ -50,8 +50,6 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
         {
             var dirInfo = Directory.CreateDirectory(path);
             logger.LogInformation("Created directory: {path}", dirInfo.FullName);  
-
-            // throw new DirectoryNotFoundException($"Directory not found: {path}, {assemblyPath}");
         }
 
         logger.LogInformation("{name} is watching folder: {path}", name, candidate.FullName);

@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace PolAssessment.AnprDataProcessor.Models;
+namespace PolAssessment.Shared.Models;
 
 public class AnprRecord
 {

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions;
+using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
 using PolAssessment.AnprEnricher.Models;
 using PolAssessment.AnprEnricher.Models.Dto;
 using System.Text.Json;

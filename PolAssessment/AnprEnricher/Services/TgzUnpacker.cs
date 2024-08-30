@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions;
+using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
 using System.Formats.Tar;
 using System.IO.Compression;
 
@@ -74,7 +74,7 @@ public class TgzUnpacker
         }
     }
 
-    public async Task<int> Unpack(Stream tgzStream)
+    private async Task<int> Unpack(Stream tgzStream)
     {
         using var gzip = new GZipStream(tgzStream, CompressionMode.Decompress);
 

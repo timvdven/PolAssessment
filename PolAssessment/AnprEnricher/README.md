@@ -25,8 +25,8 @@ graph TD;
     subgraph Read ANPR
         D([Temporary Folder])
         E(IHotFolderWatcherData \n FolderWatcher : FileSystemWatcher)
-        G(IAnprReader)
-        F(IAnprHandler)
+        G(IAnprDataReader)
+        F(IFileHandler)
 
         D -- set to monitor --> E
         E -- on Created --> F
@@ -62,7 +62,10 @@ graph TD;
 Obtain a valid Api Key from api.geoapify.com and put the API Key as value:
 ```json
 {
-  "LocationEnricherApiKey": "<< SECRET, override in appsettingsSecrets.json >>"
+  "LocationEnricher":
+  {
+    "ApiKey": "<< SECRET, override in appsettingsSecrets.json >>"
+  }
 }
 ```
 
@@ -70,8 +73,11 @@ Obtain a valid Api Key from api.geoapify.com and put the API Key as value:
 Make sure you fill in the hotfolder paths correctly in either the appsettings.json or appsettingsSecrets.json:
 ```json
 {
-  "HotFolderTgzPath": "/Users/your_user_name/your_path/PolAssessment/HotFolders/HotFolderTgz",
-  "HotFolderDataPath": "/Users/your_user_name/your_path/PolAssessment/HotFolders/HotFolderData",
+  "HotFolder":
+  {
+    "TgzPath": "/Users/your_user_name/your_path/PolAssessment/HotFolders/HotFolderTgz",
+    "DataPath": "/Users/your_user_name/your_path/PolAssessment/HotFolders/HotFolderData"
+  }
 }
 ```
 
@@ -87,21 +93,21 @@ Run within Docker. Caution: on a Windows-based host the FileSystemWatcher will n
 
 #### Build image
 
-Build the image with the following command in the directory of AnprEnricher.csproj, where the Dockerfile is.
+Build the image with the following command in the solution directory, where the file Dockerfile-AnprEnricher is.
 ```sh
-docker build -t anpr-enricher .
+docker build -f Dockerfile-AnprEnricher -t anpr-enricher-image .
 ```
 
 #### Run application within Docker
 
 Run the application with bind mount. Replace /path/on/your/host with the path you want to bind on your host.
 ```sh
-docker run -v /path/on/your/host:/app/HotFolders anpr-enricher
+docker run -v /path/on/your/host:/app/HotFolders anpr-enricher-image
 ```
 
 or, when using a Windows-based host, just expose port 8080 in order for Filebrowser to be exposed.
 ```sh
-docker run -d -p 8080:8080 anpr-enricher
+docker run -d -p 8080:8080 anpr-enricher-image
 ```
 
 Instead of just running the application, please use the docker-compose option for the yml file.

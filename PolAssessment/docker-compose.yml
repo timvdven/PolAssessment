@@ -1,0 +1,77 @@
+services:
+  mariadb:
+    image: mariadb:lts
+    container_name: mariadb-container
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: anprdata
+      MARIADB_USER: user
+      MARIADB_PASSWORD: userpassword
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./AnprDataProcessor/Data/db-docker/init-sql:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - pol-assessment-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin-container
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8088:80"
+    depends_on:
+      - mariadb
+    networks:
+      - pol-assessment-network
+
+  anpr-dataprocessor:
+    image: anpr-dataprocessor-image
+    container_name: anpr-dataprocessor-container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Swagger__Enabled=true
+      - Database__ConnectionString=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
+    ports:
+      - "5100:8080"
+      - "5101:8081"
+    networks:
+      - pol-assessment-network
+  
+  anpr-webapi:
+    image: anpr-webapi-image
+    container_name: anpr-webapi-container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Swagger__Enabled=true
+      - Database__ConnectionString=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
+    ports:
+      - "5200:8080"
+      - "5201:8081"
+    networks:
+      - pol-assessment-network
+
+  anpr-enricher:
+    image: anpr-enricher-image
+    container_name: anpr-enricher-container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AnprDataProcessor__BaseUrl=http://anpr-dataprocessor:8080/api/
+    networks:
+      - pol-assessment-network
+    volumes:
+      - ${HOTFOLDERS_PATH}:/app/HotFolders
+
+networks:
+  pol-assessment-network:
+    external: true
+
+volumes:
+  mariadb_data:
+
+# export HOTFOLDERS_PATH=/Users/timvanderven/git/PolAssessment/HotFolders
+# docker-compose up -d
