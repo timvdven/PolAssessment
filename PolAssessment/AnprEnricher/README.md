@@ -1,6 +1,9 @@
 # ANPR Enricher
 AnprEnricher is a .NET console project within the solution called PolAssessment.
 
+Other docs:
+- [Back to main README](../README.md)
+
 ## Description
 This system:
 1. handles tgz-files dropped in a certain folder

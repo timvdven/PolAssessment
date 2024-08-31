@@ -73,5 +73,6 @@ networks:
 volumes:
   mariadb_data:
 
+# docker network create pol-assessment-network
 # export HOTFOLDERS_PATH=/Users/timvanderven/git/PolAssessment/HotFolders
 # docker-compose up -d
