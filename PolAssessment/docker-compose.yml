@@ -39,19 +39,8 @@ services:
     ports:
       - "5100:8080"
       - "5101:8081"
-    networks:
-      - pol-assessment-network
-  
-  anpr-webapi:
-    image: anpr-webapi-image
-    container_name: anpr-webapi-container
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - Swagger__Enabled=true
-      - Database__ConnectionString=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
-    ports:
-      - "5200:8080"
-      - "5201:8081"
+    depends_on:
+      - mariadb
     networks:
       - pol-assessment-network
 
@@ -61,10 +50,26 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - AnprDataProcessor__BaseUrl=http://anpr-dataprocessor:8080/api/
+    depends_on:
+      - anpr-dataprocessor
     networks:
       - pol-assessment-network
     volumes:
       - ${HOTFOLDERS_PATH}:/app/HotFolders
+
+  anpr-webapi:
+    image: anpr-webapi-image
+    container_name: anpr-webapi-container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Swagger__Enabled=true
+      - Database__ConnectionStringAnpr=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
+      - Database__ConnectionStringWebApi=Server=mariadb-container;Database=webapi;User=user;Password=userpassword;
+    ports:
+      - "5200:8080"
+      - "5201:8081"
+    networks:
+      - pol-assessment-network
 
 networks:
   pol-assessment-network:
@@ -74,5 +79,6 @@ volumes:
   mariadb_data:
 
 # docker network create pol-assessment-network
-# export HOTFOLDERS_PATH=/Users/timvanderven/git/PolAssessment/HotFolders
+# check echo ${HOTFOLDERS_PATH} otherwise set it manually, e.g.:
+# export HOTFOLDERS_PATH=/Users/<username>/git/PolAssessment/HotFolders
 # docker-compose up -d
