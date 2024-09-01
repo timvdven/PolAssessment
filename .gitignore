@@ -138,3 +138,4 @@ appsettingsSecrets.json
 DataGenerator/jsons
 .vscode/
 PolAssessment/.vscode/
+*.tar.gz

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="{{ seo_language }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <header>
+    </header>
+
+    <main role="main" class="{{ specialBgClass }}">
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="footer bg-white">
+    </footer>
+
+    <script nonce="{{ nonce }}">
+        const server_host = "{{ server_host }}";
+        const watch_server_host = "{{ watch_server_host }}";
+        const police_server_host = "{{ police_server_host }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

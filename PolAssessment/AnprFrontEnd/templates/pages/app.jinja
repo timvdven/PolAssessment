@@ -1,0 +1,18 @@
+{% extends "/abstracts/_base.jinja" %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='css/app.css') }}?v={{ cachebuster }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="row">
+    <h1 title="POL Assessment versie v1.0.{{ version }}">POL Assessment</h1>
+    <div id="app" hx-swap="innerHTML" hx-trigger="load"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/app/main.js') }}?v={{ cachebuster }}"></script>
+{% endblock %}

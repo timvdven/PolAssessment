@@ -1,0 +1,28 @@
+# Bouw de applicatie
+FROM python:3.9 AS builder
+
+WORKDIR /app
+
+# Installeer de benodigde afhankelijkheden
+COPY AnprFrontEnd/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Kopieer de broncode
+COPY AnprFrontEnd/ .
+
+# Voer het build commando uit
+RUN python freeze.py
+
+# Productiebeeld
+FROM nginx:latest
+
+# Kopieer de statische inhoud van de build-map naar de juiste locatie in Nginx
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Exposeer de poort voor toegang tot de statische inhoud
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+#docker build  -f Dockerfile.AnprFrontEnd -t anpr-frontend-image .

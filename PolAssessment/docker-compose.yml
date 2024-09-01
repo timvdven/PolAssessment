@@ -71,6 +71,16 @@ services:
     networks:
       - pol-assessment-network
 
+  anpr-frontend:
+    image: anpr-frontend-image
+    container_name: anpr-frontend-container
+    environment:
+      - API_URL=http://anpr-webapi:8080/api/
+    ports:
+      - "5300:80"
+    networks:
+      - pol-assessment-network
+
 networks:
   pol-assessment-network:
     external: true

@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnprDataProcessor", "AnprDa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnprWebApi", "AnprWebApi\AnprWebApi.csproj", "{03EF1C7F-2749-40DF-8225-60ECCB13EF7D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnprFrontEnd", "AnprFrontEnd\AnprFrontEnd.csproj", "{0334C6E5-A92D-4F71-821A-5D998F50E4D9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{C6F62F1E-E4E0-48D0-B9FF-372F01D6AB1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3B0E0E16-5B99-461A-8320-C0E44AA7A528}"
