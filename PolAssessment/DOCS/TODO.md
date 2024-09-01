@@ -3,7 +3,6 @@
 [Back to main](../README.md)
 
 ## Must haves
-- Working AnprWebApi
 - Working AnprFrontEnd
 - MVP on documentation
   - Fill in all md-templates

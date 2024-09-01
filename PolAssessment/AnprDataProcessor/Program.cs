@@ -1,5 +1,6 @@
 using PolAssessment.AnprDataProcessor.Extensions;
 using PolAssessment.AnprDataProcessor.Services;
+using PolAssessment.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services
     .RegisterSwagger()
     .RegisterDbContext(builder.Configuration)
     .AddScoped<IAuthTokenHandler, AuthTokenHandler>()
+    .AddScoped<IHashService, HashService>()
     .RegisterJwt(builder.Configuration)
     .AddControllers();
 

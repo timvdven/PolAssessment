@@ -40,6 +40,7 @@ public class FileHandler : IFileHandler
         }
         _logger.LogInformation("[AnprHandler] New file detected: {FullPath}", e.FullPath);
 
+        // Somehow I need to read, process and delete the file atomically
         lock (_lock)
         {
             try

@@ -136,3 +136,5 @@ _NCrunch*
 HotFolders
 appsettingsSecrets.json
 DataGenerator/jsons
+.vscode/
+PolAssessment/.vscode/

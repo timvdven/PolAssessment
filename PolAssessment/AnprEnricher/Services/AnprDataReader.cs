@@ -27,6 +27,10 @@ public class AnprDataReader(ILogger<AnprDataReader> logger, IConfiguration confi
         }
         catch(JsonException ex)
         {
+            if (ex.InnerException?.Message?.StartsWith("'0x00' is an invalid start of a value.") ?? false)
+            {
+                _logger.LogWarning("'0x00' is an invalid start of a value.");
+            }
             _logger.LogError(ex, "Could not deserialize the ANPR data.");
             throw;
         }

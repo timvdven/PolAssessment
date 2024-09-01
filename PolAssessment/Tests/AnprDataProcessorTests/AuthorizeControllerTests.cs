@@ -24,8 +24,8 @@ public class AuthorizeControllerTests
     {
         var data = new List<UploadUser>
         {
-            new() { Id = 1, ClientId = "123", ClientSecret = "456", UserDescription = "Test User 1" },
-            new() { Id = 2, ClientId = "abc", ClientSecret = "def", UserDescription = "Test User 2" }
+            new() { Id = 1, ClientId = "123", HashedClientSecret = "456", UserDescription = "Test User 1" },
+            new() { Id = 2, ClientId = "abc", HashedClientSecret = "def", UserDescription = "Test User 2" }
         }.AsQueryable().BuildMock();
 
         _mockDbSet.As<IQueryable<UploadUser>>().Setup(m => m.Provider).Returns(data.Provider);

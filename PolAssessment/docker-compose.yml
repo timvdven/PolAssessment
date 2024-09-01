@@ -80,5 +80,5 @@ volumes:
 
 # docker network create pol-assessment-network
 # check echo ${HOTFOLDERS_PATH} otherwise set it manually, e.g.:
-# export HOTFOLDERS_PATH=/Users/<username>/git/PolAssessment/HotFolders
+# export HOTFOLDERS_PATH=${HOME}/git/PolAssessment/HotFolders
 # docker-compose up -d

@@ -1,3 +1,7 @@
-docker build -t anprdataprocessor .
+# ANPR Data Processor
+AnprDataProcessor is a .NET web project within the solution called PolAssessment.
 
-docker-compose up -d
+Other docs:
+- [Back to main README](../README.md)
+
+WIP!

@@ -19,5 +19,5 @@ public class UploadUser
 
     [Required]
     [StringLength(64)]
-    public required string ClientSecret { get; set; }
+    public required string HashedClientSecret { get; set; }
 }

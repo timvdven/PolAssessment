@@ -22,7 +22,7 @@ var serviceProvider = new ServiceCollection()
     .AddScoped<IEnricherCollection, EnricherCollectionHandler>()
     .AddScoped<IEnricher, LocationDataEnricher>()
     .AddScoped<IEnricher, VehicleDataEnricher>()
-    .AddScoped<AnprEnrichedDataSender>()
+    .AddSingleton<AnprEnrichedDataSender>()
     .AddHttpClient()
     .AddAutoMapper(typeof(Program))
     .BuildServiceProvider();

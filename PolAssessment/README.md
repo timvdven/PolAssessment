@@ -5,6 +5,7 @@ Please read the [Todos](DOCS/TODO.md)
 Projects:
 - [ANPR Enricher](AnprEnricher/README.md)
 - [ANPR Data Processor](AnprDataProcessor/README.md)
+- [ANPR Web API](AnprWebApi/README.md)
 
 ## Table of Contents
 - [Description](#description)
@@ -40,3 +41,6 @@ Make sure you have installed on your machine:
 After defining a hot hotfolder, just drop a tgz file containing a valid JSON in this folder and browse in de web app for the results. This solution also imports some pre-defined data in the database for testing purposes. A more detailed description of the usage with examples can be found [here](DOCS/USAGE/README.md).
 
 Prior to using this (or any other) solution in a production environment, please consult the recommendations [here](DOCS/RECOMMENDATIONS.md).
+
+### Creation of test data
+The documentation on creating test data can be found in the separate Data Generator project, described [here](../DataGenerator/README.md).

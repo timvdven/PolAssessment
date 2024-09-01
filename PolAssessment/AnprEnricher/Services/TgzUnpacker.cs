@@ -115,6 +115,7 @@ public class TgzUnpacker
             return;
         }
 
+        // During extraction, we need to ensure that the file is and stays unique until creation
         lock (_lock)
         {
             _logger.LogInformation("Entry name: {Name}, entry type: {EntryType}", entry.Name, entry.EntryType);

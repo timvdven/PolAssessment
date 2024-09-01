@@ -1,14 +1,14 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using PolAssessment.AnprDataProcessor.Extensions;
-using PolAssessment.AnprDataProcessor.Models;
+using PolAssessment.AnprWebApi.Extensions;
+using PolAssessment.AnprWebApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace PolAssessment.AnprDataProcessor.Services;
+namespace PolAssessment.AnprWebApi.Services;
 
 public interface IAuthTokenHandler
 {
-    string GenerateToken(UploadUser uploadUser);
+    string GenerateToken(WebUser webUser);
 }
 
 public class AuthTokenHandler(IConfiguration configuration) : JwtSecurityTokenHandler, IAuthTokenHandler
@@ -18,7 +18,7 @@ public class AuthTokenHandler(IConfiguration configuration) : JwtSecurityTokenHa
     private SymmetricSecurityKey GetSymmetricSecurityKey() => new(_configuration.GetJwtKey());
     private SigningCredentials GetSigningCredentials() => new(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
 
-    public string GenerateToken(UploadUser uploadUser)
+    public string GenerateToken(WebUser webUser)
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -26,8 +26,8 @@ public class AuthTokenHandler(IConfiguration configuration) : JwtSecurityTokenHa
             Issuer = _configuration.GetJwtIssuer(),
             Subject = new ClaimsIdentity(
             [
-                new(ClaimTypes.Name, uploadUser.ClientId),
-                new(ClaimTypes.NameIdentifier, uploadUser.Id.ToString())
+                new(ClaimTypes.Name, webUser.Username),
+                new(ClaimTypes.NameIdentifier, webUser.Id.ToString())
             ]),
             Expires = DateTime.UtcNow.AddMinutes(_configuration.GetJwtExpireMinutes()),
             SigningCredentials = GetSigningCredentials()

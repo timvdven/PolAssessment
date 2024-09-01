@@ -18,6 +18,8 @@ internal class AnprEnrichedDataSender
     private readonly IConfiguration _configuration;
     private readonly IMapper _mapper;
     private static string? token;
+    private static DateTime? lastTokenFetchTime;
+    private object _lock = new();
 
     public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IMapper mapper, IEnricherCollection enrichers, HttpClient httpClient, IConfiguration configuration)
     {
@@ -29,11 +31,8 @@ internal class AnprEnrichedDataSender
         enrichers.FinishedEnrichedData += EnricherCollection_FinishedEnrichedData;
     }
 
-    private void EnricherCollection_FinishedEnrichedData(object? sender, EnricherCollectionHandler.EnrichedDataEventArgs e)
+    private async void EnricherCollection_FinishedEnrichedData(object? sender, EnricherCollectionHandler.EnrichedDataEventArgs e)
     {
-        token ??= FetchToken();
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
         var anprRecord = new AnprRecord { LicensePlate = String.Empty };
         foreach(var kvp in e.EnrichedData)
         {
@@ -43,15 +42,16 @@ internal class AnprEnrichedDataSender
         var body = JsonSerializer.Serialize(anprRecord);
 
         _logger.LogInformation("Sending enriched data: {body}", body);
-        SendData(body);
+        await SendData(body);
         _logger.LogInformation("Enriched data sent successfully.");
     }
 
-    private void SendData(string body, bool isRetryAfterFetchToken = false)
+    private async Task SendData(string body, bool isRetryAfterFetchToken = false)
     {
         var url = _configuration.GetAnprDataProcessorAnprUrl();
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response = _httpClient.PostAsync(url, content).Result;
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var response = await _httpClient.PostAsync(url, content);
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -61,11 +61,25 @@ internal class AnprEnrichedDataSender
             }
             else
             {
-                _logger.LogInformation("Retrying after fetching token...");
-                token = FetchToken();
-                SendData(body, true);
+                // Make sure only one thread is fetching token, then wait at least 5 minutes before fetching again
+                lock (_lock)
+                {
+                    if (!lastTokenFetchTime.HasValue || DateTime.Now - lastTokenFetchTime > TimeSpan.FromMinutes(5))
+                    {
+                        token = FetchToken();
+                        lastTokenFetchTime = DateTime.Now;
+                    }
+                }
+                await SendData(body, true);
             }
         }
+    }
+
+    private async Task RetrySendData(string body)
+    {
+        _logger.LogInformation("Retrying after fetching token...");
+        token = FetchToken();
+        await SendData(body, true);
     }
 
     private string FetchToken()
@@ -80,16 +94,16 @@ internal class AnprEnrichedDataSender
         _logger.LogInformation("Fetching token from {url}", url);
         var response = _httpClient.GetAsync(url).Result;
 
+        var responseBody = response.Content.ReadAsStringAsync().Result;
         if (response.IsSuccessStatusCode)
         {
             _logger.LogInformation("Token fetched successfully.");
-            var responseBody = response.Content.ReadAsStringAsync().Result;
             var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
             return tokenResponse?.Token ?? throw new AuthenticationException("Access token not found in response.");
         }
         else
         {
-            _logger.LogError("Failed to fetch token: {id}-{secret}: {msg}", clientId, clientSecret, response.Content.ReadAsStringAsync().Result);
+            _logger.LogError("Failed to fetch token: {id}-{secret}: {msg}", clientId, clientSecret, responseBody);
             throw new AuthenticationException($"Failed to fetch token. Status code: {response.StatusCode}");
         }
     }
