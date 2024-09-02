@@ -10,4 +10,6 @@ def register(app, settings):
             'cachebuster': time(),
             'version': datetime.now().strftime('%Y-%m-%d.%H:%M:%S'),
             'nonce': settings.nonce,
+            'webapi_url': settings.webapi_url,
+            'google_map_api_key': settings.google_map_api_key,
         }

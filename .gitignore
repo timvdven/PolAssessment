@@ -139,3 +139,5 @@ DataGenerator/jsons
 .vscode/
 PolAssessment/.vscode/
 *.tar.gz
+PolAssessment/AnprFrontEnd/build/
+.env.secrets

@@ -5,15 +5,16 @@
                 <legend>Inlogformulier</legend>
                 <div class="form-group">
                     <label for="username">Gebruikersnaam</label>
-                    <input type="username" class="form-control" id="username" placeholder="Gebruikersnaam">
+                    <input name="username" class="form-control" id="username" placeholder="Gebruikersnaam">
                 </div>
                 <br>
                 <div class="form-group">
                     <label for="password">Wachtwoord</label>
-                    <input type="password" class="form-control" id="password" placeholder="Wachtwoord">
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Wachtwoord">
                 </div>
                 <br>
                 <button type="submit" class="btn btn-primary">Inloggen</button>
+                <div class="hidden spinner spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
             </fieldset>
         </form>
     </div>

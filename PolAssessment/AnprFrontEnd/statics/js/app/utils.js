@@ -40,3 +40,11 @@ export const isInteger = (str) => {
     // Controleer of de geconverteerde waarde een getal is en of de oorspronkelijke string geen extra tekens bevat
     return !isNaN(parsed) && parsed.toString() === str;
 }
+
+export const hide = (element) => {
+	element.classList.add('hidden');
+}
+
+export const show = (element) => {
+	element.classList.remove('hidden');
+}

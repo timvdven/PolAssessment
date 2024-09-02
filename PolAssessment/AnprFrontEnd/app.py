@@ -19,11 +19,17 @@ def build(settings:AttrDict):
     return app
 
 if __name__ == '__main__':
-    load_dotenv()
+    load_dotenv('.env')
+    load_dotenv('.env.secrets')
+    
     nonce = environ.get('NONCE')
+    webapi_url = environ.get('WEBAPI_URL')
+    google_map_api_key = environ.get('GOOGLE_MAP_API_KEY')
 
     settings = AttrDict({
         'nonce': nonce or 'nonsense',
+        'webapi_url': webapi_url,
+        'google_map_api_key': google_map_api_key,
     })
 
     app = build(settings)

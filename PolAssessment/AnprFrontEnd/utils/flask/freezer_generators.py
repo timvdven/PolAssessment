@@ -5,3 +5,4 @@ def register(freezer):
     def app_route():
         yield { 'page': 'login' }
         yield { 'page': 'dashboard' }
+        yield { 'page': 'map' }

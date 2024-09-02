@@ -11,6 +11,13 @@ builder.Logging
     .AddDebug();
 
 builder.Services
+    .AddCors(x =>
+        x.AddPolicy("AllowSpecificOrigins", y => y
+            .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials())
+    )
     .AddEndpointsApiExplorer()
     .RegisterSwagger()
     .RegisterAnprDbContext(builder.Configuration)
@@ -29,6 +36,7 @@ if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Swa
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowSpecificOrigins");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

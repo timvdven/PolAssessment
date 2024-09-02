@@ -3,7 +3,7 @@
 [Back to main](../README.md)
 
 ## Must haves
-- Working AnprFrontEnd
+- Working AnprFrontEnd (5% left)
 - MVP on documentation
   - Fill in all md-templates
   - Describe installation

@@ -14,7 +14,7 @@ def register(app):
     @app.route("/app/", methods=['GET'])
     @app.route("/app/<string:page>/", methods=['GET'])
     def app_route(page:str = None):
-        if page and page in ['login', 'dashboard']:
+        if page and page in ['login', 'dashboard', 'map']:
             return render_template(f'app/{page}.jinja')
         return render_template('pages/app.jinja')
 

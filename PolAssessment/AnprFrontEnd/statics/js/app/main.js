@@ -1,11 +1,16 @@
 import { getOrPrepLocalstorage } from './localStorage.js';
 import { htmx_error, htmx_beforeSwap, htmx_afterSwap } from './htmx.js';
+import * as login from './login.js';
+import * as dashboard from './dashboard.js';
+import * as map from './map.js';
 
-const globalSettings = {};
+const globalSettings = { webapi_url, anpr:[], token: null, anprHash: null };
 
 ((globalSettings) => {
     globalSettings.htmx_error = [];
     globalSettings.htxm_afterSwap = [];
+    const pol_app = getOrPrepLocalstorage();
+    globalSettings.token = pol_app.token;
 
     document.body.addEventListener("htmx:sendError", (evt) => htmx_error(evt, globalSettings));
     document.body.addEventListener("htmx:responseError", (evt) => htmx_error(evt, globalSettings));
@@ -15,9 +20,11 @@ const globalSettings = {};
         const switcher = trimSlashes(requestPath);
         switch (switcher)
         {
-            case 'register_phone': xxxx.zzzz(evt); break;
+            case 'app/login': login.init(evt, globalSettings); break;
+            case 'app/dashboard': dashboard.init(evt, globalSettings); break;
+            case 'app/map': map.init(evt, globalSettings); break;
 
-            default: console.log('Dont know what to do?', evt); break;
+            default: console.warn('Dont know what to do?', evt); break;
         }
     }));
 
@@ -28,13 +35,10 @@ const globalSettings = {};
     htmx.onLoad(function(evt) {
         // console.log('onLoad', evt);
     });
-
-    const pol_app = getOrPrepLocalstorage();
     
-    const module = pol_app.token ? 'dashboard' : 'login';
+    const module = globalSettings.token ? 'dashboard' : 'login';
     const app = document.querySelector('#app');
     app.innerHTML += '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
-    app.setAttribute('hx-get', `app/${module}`);
-    htmx.trigger('#app', 'load');
+    htmx.ajax('GET', `/app/${module}/`, '#app');
 
 })(globalSettings);
