@@ -7,8 +7,9 @@ using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using PolAssessment.AnprDataProcessor.Controllers;
 using PolAssessment.AnprDataProcessor.DbContexts;
-using PolAssessment.AnprDataProcessor.Models;
 using PolAssessment.AnprDataProcessor.Services;
+using PolAssessment.Shared.Models;
+using PolAssessment.Shared.Services;
 
 namespace AnprDataProcessorTests;
 
@@ -18,14 +19,15 @@ public class AuthorizeControllerTests
     private readonly Mock<ILogger<AuthorizeController>> _logger = new();
     private readonly Mock<IAnprDataDbContext> _mockContext = new();
     private readonly Mock<DbSet<UploadUser>> _mockDbSet = new();
+    private readonly Mock<IHashService> _hashService = new();
 
     [SetUp]
     public void SetUp()
     {
         var data = new List<UploadUser>
         {
-            new() { Id = 1, ClientId = "123", HashedClientSecret = "456", UserDescription = "Test User 1" },
-            new() { Id = 2, ClientId = "abc", HashedClientSecret = "def", UserDescription = "Test User 2" }
+            new() { Id = 1, ClientId = "123", HashedClientSecret = "Hashed(456)", UserDescription = "Test User 1" },
+            new() { Id = 2, ClientId = "abc", HashedClientSecret = "Hashed(def)", UserDescription = "Test User 2" }
         }.AsQueryable().BuildMock();
 
         _mockDbSet.As<IQueryable<UploadUser>>().Setup(m => m.Provider).Returns(data.Provider);
@@ -34,6 +36,8 @@ public class AuthorizeControllerTests
         _mockDbSet.As<IQueryable<UploadUser>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
 
         _mockContext.Setup(c => c.UploadUsers).Returns(_mockDbSet.Object);
+
+        _hashService.Setup(x => x.GetHash(It.IsAny<string>())).Returns((string str) => $"Hashed({str})");
     }
 
     [TestCase("123", "456", "Token for Test User 1")]
@@ -48,7 +52,8 @@ public class AuthorizeControllerTests
         var authorizeController = new AuthorizeController(
             _logger.Object,
             _mockContext.Object,
-            authTokenHandlerMock.Object
+            authTokenHandlerMock.Object, 
+            _hashService.Object
         );
 
         var actionResult = authorizeController.Get(clientId, clientSecret).Result;
@@ -74,7 +79,8 @@ public class AuthorizeControllerTests
         var authorizeController = new AuthorizeController(
             _logger.Object,
             _mockContext.Object,
-            authTokenHandlerMock.Object
+            authTokenHandlerMock.Object,
+            _hashService.Object
         );
 
         var actionResult = authorizeController.Get(clientId, clientSecret).Result;

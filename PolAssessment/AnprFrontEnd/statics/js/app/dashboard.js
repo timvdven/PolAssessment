@@ -1,5 +1,5 @@
 import { updateToken } from './localStorage.js';
-import { hide, show } from './utils.js';
+import { hide, show, createMarker, fitMapToMarkers } from './utils.js';
 
 export const init = (evt, globalSettings) => {
     refreshToken_if_necessary(globalSettings);
@@ -54,11 +54,13 @@ const handleRealTimeUpdate = (form, globalSettings) => {
     if (diff < 0) {
         updateToken(null);
         window.location.reload();
-    }   
+    }
     document.getElementById("jwt-exp-in").innerHTML = Math.round(diff/60);
+    const spinner = form.querySelector('.spinner-border');
+    filter(globalSettings, spinner, null, plate, startDate, endDate, null, globalSettings.anprLastFetchDate);
 };
 
-const filter = (globalSettings, spinner, submitButton, plate, startDate, endDate) => {
+const filter = (globalSettings, spinner, submitButton, plate, startDate, endDate, hash, minimumUploadDate) => {
     var filters = {};
     if (plate) {
         filters.plate = plate;
@@ -70,6 +72,14 @@ const filter = (globalSettings, spinner, submitButton, plate, startDate, endDate
 
     if (endDate) {
         filters.endDate = endDate;
+    }
+
+    if (hash) {
+        filters.hash = hash;
+    }
+
+    if (minimumUploadDate) {
+        filters.minimumUploadDate = minimumUploadDate;
     }
 
     const queryParams = new URLSearchParams(filters).toString();
@@ -86,7 +96,7 @@ const filter = (globalSettings, spinner, submitButton, plate, startDate, endDate
         }
         throw new Error('Network response was not ok.');
     }).then(data => {
-        handleAnpr(globalSettings, data);
+        handleAnpr(globalSettings, data, hash || minimumUploadDate);
     }).catch((error) => {
         console.error('Error:', error);
     }).finally(() => {
@@ -95,10 +105,37 @@ const filter = (globalSettings, spinner, submitButton, plate, startDate, endDate
     });
 };
 
-const handleAnpr = (globalSettings, data) => {
-    globalSettings.anpr = data.result;
+const handleAnpr = (globalSettings, data, isAutoRefresh) => {
+    globalSettings.anpr = isAutoRefresh ? globalSettings.anpr.concat(data.result) : data.result;
     globalSettings.anprHash = data.hash;
-    
+    globalSettings.anprLastFetchDate = data.lastFetchDate;
+
+    if (isAutoRefresh) {
+        if (data.result.length === 0) {
+            return;
+        }
+
+        show(document.getElementById('just-added'));
+        var justAddedElement = document.getElementById('just-added-amount');
+
+        // Do not refresh the map, simply add these
+        data.result.forEach((anpr) => {
+            createMarker(globalSettings.anprMap, anpr, true);
+            updateAutoUpdateData(justAddedElement);
+        });
+        const latLngArray = globalSettings.anpr.map(x => ({ lat: x.latitude, lng: x.longitude }));
+        fitMapToMarkers(globalSettings.anprMap, latLngArray);
+    } else {
+        refreshMap();
+    }
+};
+
+const updateAutoUpdateData = (amount) => {
+    var amountValue = parseInt(amount.innerText);
+    amount.innerText = amountValue + 1;
+};
+
+const refreshMap = () => {
     const theMap = document.getElementById("the-map");
     if (theMap) {
         theMap.remove();

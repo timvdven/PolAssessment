@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using PolAssessment.Shared.Models;
 
-namespace PolAssessment.AnprDataProcessor.Models;
+namespace PolAssessment.Shared.Models;
 
 [PrimaryKey(nameof(AnprRecordId), nameof(UploadUserId))]
 public class AnprRecordUploadUser
@@ -13,7 +12,7 @@ public class AnprRecordUploadUser
     public int UploadUserId { get; set; }
 
     [Required]
-    public DateTime ExactDateTime { get; set; } = DateTime.UtcNow;
+    public DateTime UploadDateTime { get; set; } = DateTime.UtcNow;
 
     [ForeignKey("AnprRecordId")]
     public virtual AnprRecord? AnprRecord { get; set; }

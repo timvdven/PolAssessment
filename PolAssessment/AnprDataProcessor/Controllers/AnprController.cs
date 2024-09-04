@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PolAssessment.AnprDataProcessor.DbContexts;
 using PolAssessment.AnprDataProcessor.Extensions;
-using PolAssessment.AnprDataProcessor.Models;
 using PolAssessment.Shared.Models;
 
 namespace PolAssessment.AnprDataProcessor.Controllers;

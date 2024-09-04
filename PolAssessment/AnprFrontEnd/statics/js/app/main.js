@@ -4,7 +4,7 @@ import * as login from './login.js';
 import * as dashboard from './dashboard.js';
 import * as map from './map.js';
 
-const globalSettings = { webapi_url, anpr:[], token: null, anprHash: null };
+const globalSettings = { webapi_url, anpr:[], token: null, anprHash: null, anprMap: null, anprLastFetchDate: null };
 
 ((globalSettings) => {
     globalSettings.htmx_error = [];

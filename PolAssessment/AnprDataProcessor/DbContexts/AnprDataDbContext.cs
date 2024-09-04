@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PolAssessment.AnprDataProcessor.Models;
 using PolAssessment.Shared.Models;
 
 namespace PolAssessment.AnprDataProcessor.DbContexts;

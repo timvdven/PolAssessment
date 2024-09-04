@@ -23,6 +23,7 @@ builder.Services
     .RegisterAnprDbContext(builder.Configuration)
     .RegisterWebApiDbContext(builder.Configuration)
     .AddScoped<IAuthTokenHandler, AuthTokenHandler>()
+    .AddScoped<IAnprQueryService, AnprQueryService>()
     .AddScoped<IHashService, HashService>()
     .RegisterJwt(builder.Configuration)
     .AddControllers();

@@ -25,7 +25,7 @@ CREATE TABLE UploadUsers (
 CREATE TABLE AnprRecordUploadUsers (
     AnprRecordId BIGINT,
     UploadUserId INT,
-    ExactDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UploadDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (AnprRecordId, UploadUserId),
     FOREIGN KEY (AnprRecordId) REFERENCES AnprRecords(Id) ON DELETE CASCADE,
     FOREIGN KEY (UploadUserId) REFERENCES UploadUsers(Id) ON DELETE CASCADE

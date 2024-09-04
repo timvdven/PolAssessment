@@ -1,10 +1,10 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PolAssessment.AnprWebApi.DbContexts;
 using PolAssessment.AnprWebApi.Extensions;
 using PolAssessment.AnprWebApi.Models.Dto;
+using PolAssessment.AnprWebApi.Services;
 using PolAssessment.Shared.Models;
 using PolAssessment.Shared.Services;
 
@@ -13,39 +13,31 @@ namespace PolAssessment.AnprWebApi.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class AnprController(ILogger<AnprController> logger, IAnprDataDbContext context, IHashService hashService) : ControllerBase
+public class AnprController(ILogger<AnprController> logger, IAnprDataDbContext context, IHashService hashService, IAnprQueryService anprQueryService) : ControllerBase
 {
     private readonly ILogger<AnprController> _logger = logger;
     private readonly IAnprDataDbContext _context = context;
     private readonly IHashService _hashService = hashService;
+    private readonly IAnprQueryService _anprQueryService = anprQueryService;
 
     [HttpGet]
-    public async Task<ActionResult<AnprResponse>> GetAnprRecords(
-        [FromQuery] DateTime? startDate, 
-        [FromQuery] DateTime? endDate, 
-        [FromQuery] string? plate,
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize,
-        [FromQuery] string? hash)
+    public async Task<ActionResult<AnprResponse>> GetAnprRecords([FromQuery] AnprRequest anprRequest)
     {
-        var userId = User.GetUserId();
-        var myPage = page ?? default;
-        var myPageSize = pageSize ?? int.MaxValue;
+        if (!string.IsNullOrEmpty(anprRequest.Hash) || !anprRequest.MinimumUploadDate.HasValue)
+        {
+            // Only log the request if the user is not requesting a hash or a minimum upload date
+            // in order to avoid logging the auto refresh requests
+            _logger.LogInformation("User {userId} requested ANPR records", User.GetUserId());
+        }
 
-        var anprRecords = await _context.AnprRecords.Where(x => 
-            (!startDate.HasValue || x.ExactDateTime >= startDate.Value) &&
-            (!endDate.HasValue || x.ExactDateTime <= endDate.Value) &&
-            (string.IsNullOrWhiteSpace(plate) || x.LicensePlate == plate))
-                .Skip(myPage * myPageSize)
-                .Take(myPageSize)
-                .ToArrayAsync();
-
+        var anprRecords = await _anprQueryService.GetAnprRecords(anprRequest);
         var hashString = _hashService.GetHash(anprRecords);
 
         var result = new AnprResponse
         {
             Hash = hashString,
-            Result = hashString.Equals(hash) ? [] : anprRecords,
+            LastFetchDate = DateTime.UtcNow,
+            Result = hashString.Equals(anprRequest.Hash) ? [] : anprRecords,
             HttpStatusCode = HttpStatusCode.OK,
             Success = true
         };
@@ -56,7 +48,8 @@ public class AnprController(ILogger<AnprController> logger, IAnprDataDbContext c
     [HttpGet("{id}")]
     public async Task<ActionResult<AnprRecord>> GetAnprRecordById(long id)
     {
-        var userId = User.GetUserId();
+        _logger.LogInformation("User {userId} requested ANPR record {id}", User.GetUserId(), id);
+
         var anprRecord = await _context.AnprRecords.FindAsync(id);
 
         if (anprRecord == null)

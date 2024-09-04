@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using PolAssessment.AnprDataProcessor.Extensions;
-using PolAssessment.AnprDataProcessor.Models;
+using PolAssessment.Shared.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
