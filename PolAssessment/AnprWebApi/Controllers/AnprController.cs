@@ -38,7 +38,7 @@ public class AnprController(ILogger<AnprController> logger, IAnprDataDbContext c
             Hash = hashString,
             LastFetchDate = DateTime.UtcNow,
             Result = hashString.Equals(anprRequest.Hash) ? [] : anprRecords,
-            HttpStatusCode = HttpStatusCode.OK,
+            HttpResponseCode = HttpStatusCode.OK,
             Success = true
         };
 

@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
+using PolAssessment.AnprEnricher.Configuration;
 using PolAssessment.AnprEnricher.Services;
 
 namespace AnprEnricherTests;
@@ -11,12 +12,20 @@ namespace AnprEnricherTests;
 [TestFixture]
 public class AnprDataReaderTests
 {
-    private readonly Mock<IConfiguration> _configMock = new();
+    private readonly Mock<IOptions<FileHandlingConfig>> _config = new();
     private readonly Mock<ILogger<AnprDataReader>> _loggerMock = new();
 
     [Test]
     public void ReadAnprData_ReturnsAnprDataOrThrowsException()
     {
+        _config
+            .Setup(x => x.Value)
+            .Returns(new FileHandlingConfig 
+            { 
+                DelayRetry = 500,
+                MaxRetriesForReadingFile = 3 
+            });
+
         var fileReaderMock = new Mock<IFileService>();
         fileReaderMock
             .SetupSequence(x => x.ReadAllText(It.IsAny<string>(), It.IsAny<int>()))
@@ -24,7 +33,7 @@ public class AnprDataReaderTests
             .Returns(JsonData[1])
             .Returns(JsonData[2]);
         
-        var anprDataReader = new AnprDataReader(_loggerMock.Object, _configMock.Object, fileReaderMock.Object);
+        var anprDataReader = new AnprDataReader(_loggerMock.Object, _config.Object, fileReaderMock.Object);
         
         var result = anprDataReader.ReadAnprData(It.IsAny<string>());
         ClassicAssert.NotNull(result);

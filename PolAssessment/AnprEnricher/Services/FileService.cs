@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
+using Microsoft.Extensions.Options;
+using PolAssessment.AnprEnricher.Configuration;
 
 namespace PolAssessment.AnprEnricher.Services;
 
@@ -11,10 +11,10 @@ public interface IFileService
     void Delete(string path);
 }
 
-public class FileService(ILogger<FileService> logger, IConfiguration configuration) : IFileService
+public class FileService(ILogger<FileService> logger, IOptions<FileHandlingConfig> configuration) : IFileService
 {
     private readonly ILogger<FileService> _logger = logger;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly FileHandlingConfig _configuration = configuration.Value;
 
     public void Delete(string path)
     {
@@ -35,7 +35,7 @@ public class FileService(ILogger<FileService> logger, IConfiguration configurati
         catch (IOException) when (trial > 0)
         {
             _logger.LogWarning("Could not read the file to read json. {trial} attempts left. Retrying...", trial);
-            Thread.Sleep(millisecondsTimeout: _configuration.GetTimeOutForRetry());
+            Thread.Sleep(millisecondsTimeout: _configuration.DelayRetry);
             return ReadAllText(fullPath, trial - 1);
         }
     }

@@ -2,7 +2,7 @@ using PolAssessment.Shared.Models;
 
 namespace PolAssessment.AnprWebApi.Models.Dto;
 
-public class AnprResponse : BaseApiResponse
+public class AnprResponse : BaseWebResponse
 {
     public required string Hash { get; set; }
     public required DateTime LastFetchDate { get; set; }

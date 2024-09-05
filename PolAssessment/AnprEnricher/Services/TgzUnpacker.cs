@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using PolAssessment.AnprEnricher.Configuration;
 using System.Formats.Tar;
 using System.IO.Compression;
 
@@ -9,13 +9,15 @@ namespace PolAssessment.AnprEnricher.Services;
 public class TgzUnpacker
 {
     private readonly ILogger<TgzUnpacker> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly FileHandlingConfig _fileHandlingConfig;
+    private readonly HotFolderConfig _hotFolderConfig;
     private readonly object _lock = new();
 
-    public TgzUnpacker(IConfiguration configuration, IHotFolderWatcherTgz hotFolderWatcher, ILogger<TgzUnpacker> logger)
+    public TgzUnpacker(IOptions<FileHandlingConfig> fileHandlingConfig, IOptions<HotFolderConfig> hotFolderConfig, IHotFolderWatcherTgz hotFolderWatcher, ILogger<TgzUnpacker> logger)
     {
         _logger = logger;
-        _configuration = configuration;
+        _fileHandlingConfig = fileHandlingConfig.Value;
+        _hotFolderConfig = hotFolderConfig.Value;
         hotFolderWatcher.Created += HotFolderWatcher_Created;
     }
 
@@ -25,7 +27,7 @@ public class TgzUnpacker
         try
         {
             _logger.LogInformation("Handling new file: {FullPath}", e.FullPath);
-            HandleNewFile(e.FullPath, _configuration.GetMaxRetriesForReadingFile());
+            HandleNewFile(e.FullPath, _fileHandlingConfig.MaxRetriesForReadingFile);
         } 
         catch (Exception ex)
         {
@@ -55,13 +57,13 @@ public class TgzUnpacker
         catch(IOException) when (trial > 0)
         {
             _logger.LogWarning("Could not read the file to unpack. {trial} attempts left. Retrying...", trial);
-            Thread.Sleep(_configuration.GetTimeOutForRetry());
+            Thread.Sleep(_fileHandlingConfig.DelayRetry);
             HandleNewFile(fullPath, trial - 1);
         }
         catch(EndOfStreamException) when (trial > 0)
         {
             _logger.LogWarning("No entries found in the file. {trial} attempts left. Retrying...", trial);
-            Thread.Sleep(_configuration.GetTimeOutForRetry());
+            Thread.Sleep(_fileHandlingConfig.DelayRetry);
             HandleNewFile(fullPath, trial - 1);
         }
         catch(EndOfStreamException ex) when (trial == 0)
@@ -98,7 +100,7 @@ public class TgzUnpacker
 
     private void HandleEntry(TarEntry entry)
     {
-        var path = _configuration.GetHotFolderDataPath();
+        var path = _hotFolderConfig.DataPath;
 
         if (entry.EntryType == TarEntryType.Directory)
         {

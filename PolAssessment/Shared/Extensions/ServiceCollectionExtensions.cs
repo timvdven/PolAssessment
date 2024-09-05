@@ -1,18 +1,20 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PolAssessment.Shared.Configuration;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using PolAssessment.AnprDataProcessor.DbContexts;
 
-namespace PolAssessment.AnprDataProcessor.Extensions;
+namespace PolAssessment.Shared.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterSwagger(this IServiceCollection services)
+    public static IServiceCollection RegisterSwagger(this IServiceCollection services, string version, string title)
     {
         return services.AddSwaggerGen(x =>
         {
-            x.SwaggerDoc("v1", new OpenApiInfo { Title = "ANPR Data Processor API", Version = "v1" });
+            x.SwaggerDoc(version, new OpenApiInfo { Title = title, Version = version });
 
             // Use Authorization within Swagger Try-Its
             x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -39,15 +41,7 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    public static IServiceCollection RegisterDbContext(this IServiceCollection services, ConfigurationManager config)
-    {
-        var connectionString = config.GetDatabaseConnectionString();
-        return services
-            .AddDbContext<AnprDataDbContext>(x => x.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)))
-            .AddScoped<IAnprDataDbContext>(provider => provider.GetService<AnprDataDbContext>() ?? throw new InvalidOperationException());
-    }
-
-    public static IServiceCollection RegisterJwt(this IServiceCollection services, ConfigurationManager config)
+    public static IServiceCollection RegisterJwt(this IServiceCollection services, JwtConfig config)
     {
         return services.AddAuthentication(x =>
         {
@@ -62,10 +56,20 @@ public static class ServiceCollectionExtensions
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = config.GetJwtIssuer(),
-                ValidAudience = config.GetJwtAudience(),
-                IssuerSigningKey = new SymmetricSecurityKey(config.GetJwtKey()),
+                ValidIssuer = config.Issuer,
+                ValidAudience = config.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.Key)),
             };
         }).Services;
+    }
+
+    public static IServiceCollection RegisterDbContext<T1, T2>(this IServiceCollection services, DatabaseConfig config)
+        where T1 : class
+        where T2 : DbContext, T1   
+    {
+        var connectionString = config.ConnectionString;
+        return services
+            .AddDbContext<T2>(x => x.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)))
+            .AddScoped<T1>(provider => provider.GetService<T2>() ?? throw new InvalidOperationException());
     }
 }

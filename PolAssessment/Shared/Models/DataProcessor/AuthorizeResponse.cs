@@ -1,15 +1,14 @@
 using System.Net;
-using PolAssessment.Shared.Models;
 
-namespace PolAssessment.AnprWebApi.Models.Dto;
+namespace PolAssessment.Shared.Models.DataProcessor;
 
-public class LoginResponse : BaseWebResponse
+public class AuthorizeResponse : BaseWebResponse
 {
     public AccessToken? AccessToken { get; set; }
 
-    public static LoginResponse GetSuccessResponse(AccessToken accessToken)
+    public static AuthorizeResponse GetSuccessResponse(AccessToken accessToken)
     {
-        return new LoginResponse
+        return new AuthorizeResponse
         {
             AccessToken = accessToken,
             Success = true,
@@ -17,9 +16,9 @@ public class LoginResponse : BaseWebResponse
         };
     }
 
-    public static LoginResponse GetUnauthorizedResponse(string? message = null)
+    public static AuthorizeResponse GetUnauthorizedResponse(string? message = null)
     {
-        return new LoginResponse
+        return new AuthorizeResponse
         {
             Success = false,
             AccessToken = null,

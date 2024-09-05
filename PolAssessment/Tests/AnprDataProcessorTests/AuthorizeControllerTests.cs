@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockQueryable.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using PolAssessment.AnprDataProcessor.Controllers;
 using PolAssessment.AnprDataProcessor.DbContexts;
 using PolAssessment.AnprDataProcessor.Services;
 using PolAssessment.Shared.Models;
+using PolAssessment.Shared.Models.DataProcessor;
 using PolAssessment.Shared.Services;
 
 namespace AnprDataProcessorTests;
@@ -42,12 +44,12 @@ public class AuthorizeControllerTests
 
     [TestCase("123", "456", "Token for Test User 1")]
     [TestCase("abc", "def", "Token for Test User 2")]
-    public void Get_ReturnsValidToken(string clientId, string clientSecret, string expectedToken)
+    public void Post_ReturnsValidToken(string clientId, string clientSecret, string expectedToken)
     {       
         var authTokenHandlerMock = new Mock<IAuthTokenHandler>();
         authTokenHandlerMock
             .Setup(x => x.GenerateToken(It.IsAny<UploadUser>()))
-            .Returns((UploadUser user) => $"Token for {user.UserDescription}");
+            .Returns((UploadUser user) => new AccessToken{ Token = $"Token for {user.UserDescription}" });
 
         var authorizeController = new AuthorizeController(
             _logger.Object,
@@ -56,25 +58,29 @@ public class AuthorizeControllerTests
             _hashService.Object
         );
 
-        var actionResult = authorizeController.Get(clientId, clientSecret).Result;
-        var result = actionResult.Result as OkObjectResult;
-        ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual(200, result!.StatusCode);
-        ClassicAssert.NotNull(result!.Value);
+        var authorizeRequest = new AuthorizeRequest
+        {
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
+        var actionResult = authorizeController.Post(authorizeRequest).Result;
+        var actionResultResult = actionResult.Result as OkObjectResult;
+        var result = actionResultResult?.Value as AuthorizeResponse;
 
-        var resultValue = result!.Value!;
-        var value = resultValue!.GetType().GetProperty("token")!.GetValue(resultValue);
-        ClassicAssert.AreEqual(expectedToken, value);
+        ClassicAssert.NotNull(result);
+        ClassicAssert.AreEqual(HttpStatusCode.OK, result!.HttpResponseCode);
+        ClassicAssert.NotNull(result!.AccessToken);
+        ClassicAssert.AreEqual(expectedToken, result!.AccessToken!.Token);
     }
 
     [TestCase("invalid", "456")]
     [TestCase("abc", "invalid")]
-    public void Get_ReturnsUnauthorized(string clientId, string clientSecret)
+    public void Post_ReturnsUnauthorized(string clientId, string clientSecret)
     {       
         var authTokenHandlerMock = new Mock<IAuthTokenHandler>();
         authTokenHandlerMock
             .Setup(x => x.GenerateToken(It.IsAny<UploadUser>()))
-            .Returns("Whatever");
+            .Returns((UploadUser user) => new AccessToken{ Token = $"Token for {user.UserDescription}" });
 
         var authorizeController = new AuthorizeController(
             _logger.Object,
@@ -83,9 +89,17 @@ public class AuthorizeControllerTests
             _hashService.Object
         );
 
-        var actionResult = authorizeController.Get(clientId, clientSecret).Result;
-        var result = actionResult.Result as UnauthorizedResult;
+        var authorizeRequest = new AuthorizeRequest
+        {
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
+        var actionResult = authorizeController.Post(authorizeRequest).Result;
+        var actionResultResult = actionResult.Result as OkObjectResult;
+        var result = actionResultResult?.Value as AuthorizeResponse;
+        
         ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual(401, result!.StatusCode);
+        ClassicAssert.AreEqual(HttpStatusCode.Unauthorized, result!.HttpResponseCode);
+        ClassicAssert.IsNull(result!.AccessToken);
     }
 }

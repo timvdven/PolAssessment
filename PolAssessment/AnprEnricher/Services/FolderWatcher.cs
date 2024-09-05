@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
+using PolAssessment.AnprEnricher.Configuration;
 
 namespace PolAssessment.AnprEnricher.Services;
 
@@ -35,8 +35,9 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
     {
         var logger = provider.GetService<ILogger<FolderWatcher>>() ?? throw new Exception("Can't locate logger");
         var configuration = provider.GetService<IConfiguration>() ?? throw new Exception("Can't locate configuration");
+        var hotFolderConfig = configuration.GetSection("HotFolder").Get<HotFolderConfig>()!;
 
-        var path = GetFullPath(logger, GetCorrectPath<T>(configuration), typeof(T).Name);
+        var path = GetFullPath(logger, GetCorrectPath<T>(hotFolderConfig), typeof(T).Name);
         var candidate = new FolderWatcher(logger, path);
         candidate.SetBaseSettings();
 
@@ -56,16 +57,16 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
         return candidate.FullName;
     }
 
-    private static string GetCorrectPath<T>(IConfiguration configuration)
+    private static string GetCorrectPath<T>(HotFolderConfig configuration)
     {
         if (typeof(T) == typeof(IHotFolderWatcherTgz))
         {
-            return configuration.GetHotFolderTgzPath();
+            return configuration.TgzPath;
         }
 
         if (typeof(T) == typeof(IHotFolderWatcherData))
         {
-            return configuration.GetHotFolderDataPath();
+            return configuration.DataPath;
         }
 
         throw new ArgumentException("Unknown type");

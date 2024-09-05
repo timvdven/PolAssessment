@@ -1,6 +1,8 @@
-﻿namespace PolAssessment.AnprWebApi.Models.Dto;
+﻿using PolAssessment.Shared.Models;
 
-public class WebUserResponse : BaseApiResponse
+namespace PolAssessment.AnprWebApi.Models.Dto;
+
+public class WebUserResponse : BaseWebResponse
 {
     public int Id { get; set; }
     public required string Fullname { get; set; }

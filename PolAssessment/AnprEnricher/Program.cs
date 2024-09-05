@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PolAssessment.AnprEnricher.Configuration;
 using PolAssessment.AnprEnricher.Services;
 using PolAssessment.AnprEnricher.Services.Enrichers;
 
@@ -12,17 +13,32 @@ var configuration = new ConfigurationBuilder()
 
 var serviceProvider = new ServiceCollection()
     .AddLogging(logging => logging.AddConsole())
-    .AddSingleton<IConfiguration>(_ => configuration)
+
+    .Configure<HotFolderConfig>(configuration.GetSection("HotFolder"))
     .AddSingleton<IHotFolderWatcherTgz>(FolderWatcher.CreateHotFolderWatcher<IHotFolderWatcherTgz>)
     .AddSingleton<IHotFolderWatcherData>(FolderWatcher.CreateHotFolderWatcher<IHotFolderWatcherData>)
+
+    .Configure<FileHandlingConfig>(configuration.GetSection("FileHandling"))
     .AddScoped<TgzUnpacker>()
-    .AddScoped<IFileHandler, FileHandler>()
     .AddScoped<IFileService, FileService>()
+    .AddScoped<IFileHandler, FileHandler>()
+
     .AddScoped<IAnprDataReader, AnprDataReader>()
     .AddScoped<IEnricherCollection, EnricherCollectionHandler>()
+
+    .Configure<LocationEnricherConfig>(configuration.GetSection("LocationEnricher"))
+    .AddScoped<ILocationDataUrlService, LocationDataUrlService>()
     .AddScoped<IEnricher, LocationDataEnricher>()
+
+    .Configure<VehicleEnricherConfig>(configuration.GetSection("VehicleEnricher"))
+    .AddScoped<IVehicleDataUrlService, VehicleDataUrlService>()
     .AddScoped<IEnricher, VehicleDataEnricher>()
+
     .AddSingleton<AnprEnrichedDataSender>()
+
+    .Configure<AnprDataProcessorConfig>(configuration.GetSection("AnprDataProcessor"))
+    .AddSingleton<ITokenService, TokenService>()
+
     .AddHttpClient()
     .AddAutoMapper(typeof(Program))
     .BuildServiceProvider();

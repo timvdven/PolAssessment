@@ -24,7 +24,7 @@ public class MeController(IWebApiDbContext webApiDbContext) : ControllerBase
             Id = user!.Id,
             Fullname = user!.Fullname,
             Username = user!.Username,
-            HttpStatusCode = HttpStatusCode.OK,
+            HttpResponseCode = HttpStatusCode.OK,
             Success = true
         };
         return Ok(result);

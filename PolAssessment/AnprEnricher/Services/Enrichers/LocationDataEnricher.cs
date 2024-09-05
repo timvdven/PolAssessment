@@ -1,24 +1,22 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
 using PolAssessment.AnprEnricher.Models;
 using PolAssessment.AnprEnricher.Models.Dto;
 using System.Text.Json;
 
 namespace PolAssessment.AnprEnricher.Services.Enrichers;
 
-internal class LocationDataEnricher(ILogger<LocationDataEnricher> logger, IConfiguration configuration, HttpClient httpClient, IMapper mapper) : BaseHttpClientEnricher(httpClient), IEnricher
+internal class LocationDataEnricher(ILogger<LocationDataEnricher> logger, ILocationDataUrlService locationDataUrlService, HttpClient httpClient, IMapper mapper) : BaseHttpClientEnricher(httpClient), IEnricher
 {
     private readonly ILogger<LocationDataEnricher> _logger = logger;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly ILocationDataUrlService _locationDataUrlService = locationDataUrlService;
     private readonly IMapper _mapper = mapper;
 
     public async Task<object> Enrich(AnprData data)
     {
         _logger.LogInformation("Enriching location data.");
 
-        var url = _configuration.GetLocationEnricherUrl(data.Coordinates.Latitude, data.Coordinates.Longitude);
+        var url = _locationDataUrlService.GetLocationDataUrl(data.Coordinates.Latitude, data.Coordinates.Longitude);
 
         _logger.LogInformation("Enriching location data for URL {url}.", url);
         var rawString = await GetDataFromApiAsync(url);

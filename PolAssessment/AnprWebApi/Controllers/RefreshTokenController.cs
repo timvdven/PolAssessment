@@ -1,4 +1,3 @@
-using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PolAssessment.AnprWebApi.DbContexts;
@@ -11,8 +10,9 @@ namespace PolAssessment.AnprWebApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class RefreshTokenController(IWebApiDbContext webApiDbContext, IAuthTokenHandler authTokenHandler) : ControllerBase
+public class RefreshTokenController(ILogger<RefreshTokenController> logger, IWebApiDbContext webApiDbContext, IAuthTokenHandler authTokenHandler) : ControllerBase
 {
+    private readonly ILogger<RefreshTokenController> _logger = logger;
     private readonly IWebApiDbContext _webApiDbContext = webApiDbContext;
     private readonly IAuthTokenHandler _authTokenHandler = authTokenHandler;
 
@@ -22,14 +22,9 @@ public class RefreshTokenController(IWebApiDbContext webApiDbContext, IAuthToken
         var userId = User.GetUserId();
         var user = await _webApiDbContext.WebUsers.FindAsync(userId);
 
-        var expiration = User.Expiration();
-
-        var result = new LoginResponse
-        {
-            HttpStatusCode = HttpStatusCode.OK,
-            Success = true,
-            Token = _authTokenHandler.GenerateToken(user!)
-        };
-        return Ok(result);
+        var token = _authTokenHandler.GenerateToken(user!);
+        _logger.LogInformation("Token generated successfully after Refresh.");
+    
+        return Ok(LoginResponse.GetSuccessResponse(token));
     }
 }

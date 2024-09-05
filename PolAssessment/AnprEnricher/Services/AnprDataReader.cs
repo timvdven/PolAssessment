@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PolAssessment.AnprEnricher.Extensions.ConfigurationExtensions;
+using Microsoft.Extensions.Options;
+using PolAssessment.AnprEnricher.Configuration;
 using PolAssessment.AnprEnricher.Models;
 using System.Text.Json;
 
@@ -11,17 +12,17 @@ public interface IAnprDataReader
     AnprData ReadAnprData(string fullPath);
 }
 
-public class AnprDataReader(ILogger<AnprDataReader> logger, IConfiguration configuration, IFileService fileReader) : IAnprDataReader
+public class AnprDataReader(ILogger<AnprDataReader> logger, IOptions<FileHandlingConfig> configuration, IFileService fileReader) : IAnprDataReader
 {
     private readonly ILogger<AnprDataReader> _logger = logger;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly FileHandlingConfig _configuration = configuration.Value;
     private readonly IFileService _fileReader = fileReader;
 
     public AnprData ReadAnprData(string fullPath)
     {
         try
         {
-            var rawString = _fileReader.ReadAllText(fullPath, _configuration.GetMaxRetriesForReadingFile());
+            var rawString = _fileReader.ReadAllText(fullPath, _configuration.MaxRetriesForReadingFile);
             var result = JsonSerializer.Deserialize<AnprData>(rawString);
             return result ?? throw new JsonException("Could not deserialize the ANPR data.");
         }
