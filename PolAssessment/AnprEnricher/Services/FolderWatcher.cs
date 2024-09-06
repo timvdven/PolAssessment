@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PolAssessment.AnprEnricher.Configuration;
 
 namespace PolAssessment.AnprEnricher.Services;
@@ -34,10 +35,9 @@ public class FolderWatcher(ILogger<FolderWatcher> logger, string path) : FileSys
     public static FolderWatcher CreateHotFolderWatcher<T>(IServiceProvider provider)
     {
         var logger = provider.GetService<ILogger<FolderWatcher>>() ?? throw new Exception("Can't locate logger");
-        var configuration = provider.GetService<IConfiguration>() ?? throw new Exception("Can't locate configuration");
-        var hotFolderConfig = configuration.GetSection("HotFolder").Get<HotFolderConfig>()!;
+        var hotFolderConfig = provider.GetRequiredService<IOptions<HotFolderConfig>>();
 
-        var path = GetFullPath(logger, GetCorrectPath<T>(hotFolderConfig), typeof(T).Name);
+        var path = GetFullPath(logger, GetCorrectPath<T>(hotFolderConfig.Value), typeof(T).Name);
         var candidate = new FolderWatcher(logger, path);
         candidate.SetBaseSettings();
 

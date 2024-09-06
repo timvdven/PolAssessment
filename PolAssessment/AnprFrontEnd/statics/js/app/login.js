@@ -44,10 +44,11 @@ const initLogin = (evt, globalSettings) => {
 
 const handleLogin = (data) => {
     console.log(data)
-    if (data.httpStatusCode === 401) {
+
+    if (data.httpResponseCode === 401) {
         alert('Inloggen mislukt, probeer opnieuw');
-    } else if (data.httpStatusCode === 200) {
-        updateToken(data.token);
+    } else if (data.httpResponseCode === 200) {
+        updateToken(data.accessToken.token);
         window.location.reload();
     }
 };

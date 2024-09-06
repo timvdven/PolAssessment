@@ -2,12 +2,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using PolAssessment.AnprEnricher.Configuration;
 using PolAssessment.AnprEnricher.Services;
 
-namespace AnprEnricherTests;
+namespace AnprEnricher.Tests.Services;
 
 [TestFixture]
 public class AnprDataReaderTests
@@ -20,10 +18,10 @@ public class AnprDataReaderTests
     {
         _config
             .Setup(x => x.Value)
-            .Returns(new FileHandlingConfig 
-            { 
+            .Returns(new FileHandlingConfig
+            {
                 DelayRetry = 500,
-                MaxRetriesForReadingFile = 3 
+                MaxRetriesForReadingFile = 3
             });
 
         var fileReaderMock = new Mock<IFileService>();
@@ -32,22 +30,28 @@ public class AnprDataReaderTests
             .Returns(JsonData[0])
             .Returns(JsonData[1])
             .Returns(JsonData[2]);
-        
+
         var anprDataReader = new AnprDataReader(_loggerMock.Object, _config.Object, fileReaderMock.Object);
-        
+
         var result = anprDataReader.ReadAnprData(It.IsAny<string>());
-        ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual("AB-12-CD", result.Plate);
-        ClassicAssert.AreEqual(52.0246, result.Coordinates.Latitude);
-        ClassicAssert.AreEqual(4.1750, result.Coordinates.Longitude);
-        ClassicAssert.AreEqual(new DateTime(2024, 8, 1, 12, 0, 0), result.DateTime);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Plate, Is.EqualTo("AB-12-CD"));
+            Assert.That(result.Coordinates.Latitude, Is.EqualTo(52.0246));
+            Assert.That(result.Coordinates.Longitude, Is.EqualTo(4.1750));
+            Assert.That(result.DateTime, Is.EqualTo(new DateTime(2024, 8, 1, 12, 0, 0)));
+        });
 
         result = anprDataReader.ReadAnprData(It.IsAny<string>());
-        ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual("LX-34-OP", result.Plate);
-        ClassicAssert.AreEqual(-52.0246, result.Coordinates.Latitude);
-        ClassicAssert.AreEqual(-4.1750, result.Coordinates.Longitude);
-        ClassicAssert.AreEqual(new DateTime(2014, 8, 31, 11, 0, 0), result.DateTime);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Plate, Is.EqualTo("LX-34-OP"));
+            Assert.That(result.Coordinates.Latitude, Is.EqualTo(-52.0246));
+            Assert.That(result.Coordinates.Longitude, Is.EqualTo(-4.1750));
+            Assert.That(result.DateTime, Is.EqualTo(new DateTime(2014, 8, 31, 11, 0, 0)));
+        });
 
         Assert.Throws<JsonException>(() => anprDataReader.ReadAnprData(It.IsAny<string>()));
         Assert.Throws<ArgumentNullException>(() => anprDataReader.ReadAnprData(It.IsAny<string>()));

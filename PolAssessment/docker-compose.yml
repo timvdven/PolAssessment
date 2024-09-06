@@ -63,8 +63,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Swagger__Enabled=true
-      - Database__ConnectionStringAnpr=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
-      - Database__ConnectionStringWebApi=Server=mariadb-container;Database=webapi;User=user;Password=userpassword;
+      - Database__Anpr__ConnectionString=Server=mariadb-container;Database=anprdata;User=user;Password=userpassword;
+      - Database__WebApi__ConnectionString=Server=mariadb-container;Database=webapi;User=user;Password=userpassword;
     ports:
       - "5200:8080"
       - "5201:8081"

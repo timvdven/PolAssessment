@@ -34,6 +34,9 @@ var serviceProvider = new ServiceCollection()
     .AddScoped<IVehicleDataUrlService, VehicleDataUrlService>()
     .AddScoped<IEnricher, VehicleDataEnricher>()
 
+    .AddSingleton<JsonSerializerOptionsConfig>()
+
+    .AddSingleton<IDataSendThreadControlService, DataSendThreadControlService>()
     .AddSingleton<AnprEnrichedDataSender>()
 
     .Configure<AnprDataProcessorConfig>(configuration.GetSection("AnprDataProcessor"))

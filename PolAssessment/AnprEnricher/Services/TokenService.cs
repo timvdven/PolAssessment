@@ -13,13 +13,14 @@ public interface ITokenService
     Task<AccessToken> GetTokenAsync();
 }
 
-public class TokenService(HttpClient httpClient, ILogger<TokenService> logger, IOptions<AnprDataProcessorConfig> config) : ITokenService
+public class TokenService(HttpClient httpClient, ILogger<TokenService> logger, IOptions<AnprDataProcessorConfig> config, JsonSerializerOptionsConfig jsonSerializerOptionsConfig) : ITokenService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly ILogger<TokenService> _logger = logger;
     private readonly AnprDataProcessorConfig _config = config.Value;
+    private readonly JsonSerializerOptionsConfig _jsonSerializerOptionsConfig = jsonSerializerOptionsConfig;
     private AccessToken? _token;
-    private DateTime? _lastTokenFetchTime;
+    private object _lock = new();
 
     private async Task<AccessToken> FetchTokenAsync()
     {
@@ -44,18 +45,25 @@ public class TokenService(HttpClient httpClient, ILogger<TokenService> logger, I
         }
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var authorizeResponse = JsonSerializer.Deserialize<AuthorizeResponse>(responseContent) 
-            ?? throw new InvalidOperationException("Failed to deserialize token response");
+        var authorizeResponse = DeserializeAuthorizeResponse(responseContent);
 
         return authorizeResponse?.AccessToken ?? throw new InvalidOperationException("Failed to get access token");
     }
 
+    public AuthorizeResponse DeserializeAuthorizeResponse(string responseContent)
+    {
+        _logger.LogInformation("Deserializing token response...");
+        return JsonSerializer.Deserialize<AuthorizeResponse>(responseContent, _jsonSerializerOptionsConfig.Options)
+            ?? throw new InvalidOperationException("Failed to deserialize token response");
+    }
+
     public async Task<AccessToken> GetTokenAsync()
     {
-        int maxRetries = _config.MaxRetries;
-        int retryDelay = _config.RetryDelay;
-        int attempts = 0;
+        return await GetTokenAsync(1);
+    }
 
+    public async Task<AccessToken> GetTokenAsync(int attempt)
+    {
         if (_token != null && !ValidateToken(_token))
         {
             _token = null;
@@ -63,20 +71,19 @@ public class TokenService(HttpClient httpClient, ILogger<TokenService> logger, I
 
         try
         {
-            if (_token == null)
+            lock(_lock)
             {
-                _token = await FetchTokenAsync();
-                _lastTokenFetchTime = DateTime.Now;
+                _token ??= FetchTokenAsync().Result;
             }
 
             return _token;
         }
-        catch (InvalidOperationException ex) when (attempts < maxRetries)
+        catch (InvalidOperationException ex) when (attempt < _config.MaxRetries)
         {
-            _logger.LogError(ex, "Failed to get token. Retrying...");
-            attempts++;
-            Thread.Sleep(retryDelay);
-            _token = await GetTokenAsync();
+            _logger.LogError(ex, "Failed to get token at attempt {attempt}. Retrying...", attempt);
+            
+            Thread.Sleep(_config.RetryDelay);
+            _token = await GetTokenAsync(attempt + 1);
             return _token;
         }
         catch (Exception ex)
@@ -89,6 +96,6 @@ public class TokenService(HttpClient httpClient, ILogger<TokenService> logger, I
     private bool ValidateToken(AccessToken token)
     {
         _logger.LogInformation("Validating token...");
-        return token.Expiry > DateTime.Now;
+        return token.Expiry > DateTime.UtcNow;
     }
 }

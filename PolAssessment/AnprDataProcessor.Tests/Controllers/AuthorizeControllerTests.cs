@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MockQueryable.EntityFrameworkCore;
+using MockQueryable;
 using Moq;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using PolAssessment.AnprDataProcessor.Controllers;
 using PolAssessment.AnprDataProcessor.DbContexts;
 using PolAssessment.AnprDataProcessor.Services;
@@ -13,7 +11,7 @@ using PolAssessment.Shared.Models;
 using PolAssessment.Shared.Models.DataProcessor;
 using PolAssessment.Shared.Services;
 
-namespace AnprDataProcessorTests;
+namespace AnprDataProcessor.Tests.Controllers;
 
 [TestFixture]
 public class AuthorizeControllerTests
@@ -45,42 +43,11 @@ public class AuthorizeControllerTests
     [TestCase("123", "456", "Token for Test User 1")]
     [TestCase("abc", "def", "Token for Test User 2")]
     public void Post_ReturnsValidToken(string clientId, string clientSecret, string expectedToken)
-    {       
+    {
         var authTokenHandlerMock = new Mock<IAuthTokenHandler>();
         authTokenHandlerMock
             .Setup(x => x.GenerateToken(It.IsAny<UploadUser>()))
-            .Returns((UploadUser user) => new AccessToken{ Token = $"Token for {user.UserDescription}" });
-
-        var authorizeController = new AuthorizeController(
-            _logger.Object,
-            _mockContext.Object,
-            authTokenHandlerMock.Object, 
-            _hashService.Object
-        );
-
-        var authorizeRequest = new AuthorizeRequest
-        {
-            ClientId = clientId,
-            ClientSecret = clientSecret
-        };
-        var actionResult = authorizeController.Post(authorizeRequest).Result;
-        var actionResultResult = actionResult.Result as OkObjectResult;
-        var result = actionResultResult?.Value as AuthorizeResponse;
-
-        ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual(HttpStatusCode.OK, result!.HttpResponseCode);
-        ClassicAssert.NotNull(result!.AccessToken);
-        ClassicAssert.AreEqual(expectedToken, result!.AccessToken!.Token);
-    }
-
-    [TestCase("invalid", "456")]
-    [TestCase("abc", "invalid")]
-    public void Post_ReturnsUnauthorized(string clientId, string clientSecret)
-    {       
-        var authTokenHandlerMock = new Mock<IAuthTokenHandler>();
-        authTokenHandlerMock
-            .Setup(x => x.GenerateToken(It.IsAny<UploadUser>()))
-            .Returns((UploadUser user) => new AccessToken{ Token = $"Token for {user.UserDescription}" });
+            .Returns((UploadUser user) => new AccessToken { Token = $"Token for {user.UserDescription}" });
 
         var authorizeController = new AuthorizeController(
             _logger.Object,
@@ -97,9 +64,46 @@ public class AuthorizeControllerTests
         var actionResult = authorizeController.Post(authorizeRequest).Result;
         var actionResultResult = actionResult.Result as OkObjectResult;
         var result = actionResultResult?.Value as AuthorizeResponse;
-        
-        ClassicAssert.NotNull(result);
-        ClassicAssert.AreEqual(HttpStatusCode.Unauthorized, result!.HttpResponseCode);
-        ClassicAssert.IsNull(result!.AccessToken);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.HttpResponseCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result!.AccessToken, Is.Not.Null);
+            Assert.That(result!.AccessToken!.Token, Is.EqualTo(expectedToken));
+        });
+    }
+
+    [TestCase("invalid", "456")]
+    [TestCase("abc", "invalid")]
+    public void Post_ReturnsUnauthorized(string clientId, string clientSecret)
+    {
+        var authTokenHandlerMock = new Mock<IAuthTokenHandler>();
+        authTokenHandlerMock
+            .Setup(x => x.GenerateToken(It.IsAny<UploadUser>()))
+            .Returns((UploadUser user) => new AccessToken { Token = $"Token for {user.UserDescription}" });
+
+        var authorizeController = new AuthorizeController(
+            _logger.Object,
+            _mockContext.Object,
+            authTokenHandlerMock.Object,
+            _hashService.Object
+        );
+
+        var authorizeRequest = new AuthorizeRequest
+        {
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
+        var actionResult = authorizeController.Post(authorizeRequest).Result;
+        var actionResultResult = actionResult.Result as OkObjectResult;
+        var result = actionResultResult?.Value as AuthorizeResponse;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.HttpResponseCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(result!.AccessToken, Is.Null);
+        });
     }
 }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PolAssessment.AnprEnricher.Configuration;
@@ -18,8 +17,9 @@ internal class AnprEnrichedDataSender
     private readonly AnprDataProcessorConfig _config;
     private readonly IMapper _mapper;
     private readonly ITokenService _tokenService;
+    private readonly IDataSendThreadControlService _dataSendThreadControlService;
 
-    public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IMapper mapper, IEnricherCollection enrichers, HttpClient httpClient, ITokenService tokenService, IOptions<AnprDataProcessorConfig> config)
+    public AnprEnrichedDataSender(ILogger<AnprEnrichedDataSender> logger, IMapper mapper, IEnricherCollection enrichers, HttpClient httpClient, ITokenService tokenService, IOptions<AnprDataProcessorConfig> config, IDataSendThreadControlService dataSendThreadControlService)
     {
         _logger = logger;
         _logger.LogInformation("AnprEnrichedDataSender created, starting service...");
@@ -27,10 +27,24 @@ internal class AnprEnrichedDataSender
         _config = config.Value;
         _mapper = mapper;
         _tokenService = tokenService;
+        _dataSendThreadControlService = dataSendThreadControlService;
         enrichers.FinishedEnrichedData += EnricherCollection_FinishedEnrichedData;
     }
 
     private async void EnricherCollection_FinishedEnrichedData(object? sender, EnricherCollectionHandler.EnrichedDataEventArgs e)
+    {
+        await _dataSendThreadControlService.WaitAsync();
+        try
+        {
+            await HandleEnrichedCollection(e);
+        }
+        finally
+        {
+            _dataSendThreadControlService.Release();
+        }
+    }
+
+    private async Task HandleEnrichedCollection(EnricherCollectionHandler.EnrichedDataEventArgs e)
     {
         _logger.LogInformation("Enriched data received. Going to map and send data...");
         var anprRecord = MapToAnprRecord(e.EnrichedData);
@@ -51,68 +65,46 @@ internal class AnprEnrichedDataSender
         return anprRecord;
     }
 
-    private async Task SendData(string body)
+    private async Task SendData(string body, int attempt = 1)
     {
-        var url = string.Concat(_config.BaseUrl, _config.Operation.Anpr);
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var token = await _tokenService.GetTokenAsync();
-
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-        var response = await _httpClient.PostAsync(url, content);
-
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if (string.IsNullOrEmpty(body))
         {
-            throw new AuthenticationException("Unauthorized. Please check the token.");
-            // if (isRetryAfterFetchToken)
-            // {
-            //     _logger.LogError("Failed to send enriched data. Status code: {statusCode}", response.StatusCode);
-            // }
-            // else
-            // {
-            //     // Make sure only one thread is fetching token, then wait at least 5 minutes before fetching again
-            //     lock (_lock)
-            //     {
-            //         if (!lastTokenFetchTime.HasValue || DateTime.Now - lastTokenFetchTime > TimeSpan.FromMinutes(5))
-            //         {
-            //             token = FetchToken();
-            //             lastTokenFetchTime = DateTime.Now;
-            //         }
-            //     }
-            //     await SendData(body, true);
-            // }
+            _logger.LogWarning("Empty body. Skipping sending data.");
+            return;
+        }
+
+        try
+        {
+            var url = string.Concat(_config.BaseUrl, _config.Operation.Anpr);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var token = await _tokenService.GetTokenAsync() ?? throw new InvalidOperationException("SendData failed to get token.");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+
+            if (_httpClient == null || url == null || content == null)
+            {
+                _logger.LogError("HttpClient, url, or content is null.");
+            }
+
+            var response = await _httpClient!.PostAsync(url, content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _logger.LogError("Unauthorized. Please check token: {token}.", token.Token);
+                throw new AuthenticationException("Unauthorized. Please check the token.");
+            }
+        }
+        catch(Exception ex) when (attempt < _config.MaxRetries)
+        {
+            _logger.LogError(ex, "Failed to send data at attempt {attempt}. Retrying in {retryDelay}...", attempt, _config.RetryDelay);
+            Thread.Sleep(_config.RetryDelay);
+
+            await SendData(body, attempt + 1);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send data.");
+            throw;
         }
     }
-
-    // private async Task RetrySendData(string body)
-    // {
-    //     _logger.LogInformation("Retrying after fetching token...");
-    //     token = FetchToken();
-    //     await SendData(body, true);
-    // }
-
-    // private string FetchToken()
-    // {
-    //     var url = _configuration.GetAnprDataProcessorAuthorizeUrl();
-    //     var clientId = _configuration.GetAnprDataProcessorClientId();
-    //     var clientSecret = _configuration.GetAnprDataProcessorClientSecret();
-
-    //     _httpClient.DefaultRequestHeaders.Add("Client-Id", clientId);
-    //     _httpClient.DefaultRequestHeaders.Add("Client-Secret", clientSecret);
-        
-    //     _logger.LogInformation("Fetching token from {url}", url);
-    //     var response = _httpClient.GetAsync(url).Result;
-
-    //     var responseBody = response.Content.ReadAsStringAsync().Result;
-    //     if (response.IsSuccessStatusCode)
-    //     {
-    //         _logger.LogInformation("Token fetched successfully.");
-    //         var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
-    //         return tokenResponse?.Token ?? throw new AuthenticationException("Access token not found in response.");
-    //     }
-    //     else
-    //     {
-    //         _logger.LogError("Failed to fetch token: {id}-{secret}: {msg}", clientId, clientSecret, responseBody);
-    //         throw new AuthenticationException($"Failed to fetch token. Status code: {response.StatusCode}");
-    //     }
-    // }
 }

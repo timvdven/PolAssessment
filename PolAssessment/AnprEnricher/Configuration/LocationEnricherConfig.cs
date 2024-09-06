@@ -3,13 +3,13 @@ namespace PolAssessment.AnprEnricher.Configuration;
 public class LocationEnricherConfig
 {
     public required string BaseUrl { get; set; }
-    public required QueryParametersSubclass QueryParameters { get; set; }
+    public required QueryParametersConfig QueryParameters { get; set; }
     public required string ApiKey { get; set; }
 
-    public class QueryParametersSubclass
+    public class QueryParametersConfig
     {
-        public required string Latitude { internal get; set; }
-        public required string Longitude { internal get; set; }
-        public required string ApiKey { internal get; set; }
+        public required string Latitude { get; set; }
+        public required string Longitude { get; set; }
+        public required string ApiKey { get; set; }
     }
 }

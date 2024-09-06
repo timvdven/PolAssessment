@@ -1,4 +1,4 @@
-using System.Collections.Specialized;
+using System.Web;
 using Microsoft.Extensions.Options;
 using PolAssessment.AnprEnricher.Configuration;
 
@@ -20,13 +20,12 @@ public class LocationDataUrlService(IOptions<LocationEnricherConfig> config) : I
         var baseUrl = _config.BaseUrl;
 
         var uriBuilder = new UriBuilder(baseUrl);
-        var query = new NameValueCollection
-        {
-            [queryParameters.Latitude] = latitude.ToString(),
-            [queryParameters.Longitude] = longitude.ToString(),
-            [queryParameters.ApiKey] = apiKey
-        };
-        uriBuilder.Query = query.ToString();
+        var queryString = HttpUtility.ParseQueryString(string.Empty);
+        queryString[queryParameters.Latitude] = latitude.ToString();
+        queryString[queryParameters.Longitude] = longitude.ToString();
+        queryString[queryParameters.ApiKey] = apiKey;
+
+        uriBuilder.Query = queryString.ToString()!.Replace("%2C", ".", StringComparison.InvariantCultureIgnoreCase);
 
         return uriBuilder.ToString();
     }

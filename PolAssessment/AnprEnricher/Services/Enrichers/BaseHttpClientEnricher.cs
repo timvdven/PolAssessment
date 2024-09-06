@@ -7,7 +7,10 @@ public abstract class BaseHttpClientEnricher(HttpClient httpClient)
     protected async Task<string> GetDataFromApiAsync(string url)
     {
         HttpResponseMessage response = await _httpClient.GetAsync(url);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Failed to get data from API. Status code: {response.StatusCode}");
+        }
 
         return await response.Content.ReadAsStringAsync();
     }
