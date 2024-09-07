@@ -30,6 +30,8 @@ builder.Services
     
     .RegisterJwt(configuration.GetSection("Jwt").Get<JwtConfig>()!)
 
+    .AddScoped<IAnprControllerService, AnprControllerService>()
+    .AddScoped<IAuthorizeControllerService, AuthorizeControllerService>()
     .AddControllers();
 
 var app = builder.Build();

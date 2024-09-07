@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using PolAssessment.Shared.Models;
 
 namespace PolAssessment.AnprDataProcessor.DbContexts;
@@ -8,6 +9,8 @@ public interface IAnprDataDbContext
     DbSet<AnprRecord> AnprRecords { get; set; }
     DbSet<UploadUser> UploadUsers { get; set; }
     DbSet<AnprRecordUploadUser> AnprRecordUploadUsers { get; set; }
+    DatabaseFacade Database { get; }
+    Task<int>SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 
 public class AnprDataDbContext(DbContextOptions<AnprDataDbContext> options) : DbContext(options), IAnprDataDbContext

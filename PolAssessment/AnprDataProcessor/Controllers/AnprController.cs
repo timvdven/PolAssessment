@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PolAssessment.AnprDataProcessor.DbContexts;
 using PolAssessment.AnprDataProcessor.Extensions;
+using PolAssessment.AnprDataProcessor.Services;
 using PolAssessment.Shared.Models;
 
 namespace PolAssessment.AnprDataProcessor.Controllers;
@@ -9,17 +9,15 @@ namespace PolAssessment.AnprDataProcessor.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class AnprController(ILogger<AnprController> logger, AnprDataDbContext context) : ControllerBase
+public class AnprController(ILogger<AnprController> logger, IAnprControllerService anprControllerService) : ControllerBase
 {
     private readonly ILogger<AnprController> _logger = logger;
-    private readonly AnprDataDbContext _context = context;
+    private readonly IAnprControllerService _anprControllerService = anprControllerService;
 
-    // GET: api/Upload/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<AnprRecord>> GetAnprRecord(long id)
+    public async Task<ActionResult<AnprRecord>> Get(long id)
     {
-        var userId = User.GetUserId();
-        var anprRecord = await _context.AnprRecords.FindAsync(id);
+        var anprRecord = await _anprControllerService.GetAnprRecordByIdOrDefault(id);
 
         if (anprRecord == null)
         {
@@ -29,36 +27,12 @@ public class AnprController(ILogger<AnprController> logger, AnprDataDbContext co
         return anprRecord;
     }
 
-    // POST: api/Upload
     [HttpPost]
-    public async Task<ActionResult<AnprRecord>> PostAnprRecord(AnprRecord anprRecord)
+    public async Task<ActionResult<AnprRecord>> Post(AnprRecord anprRecord)
     {
         var userId = User.GetUserId();
+        var result = await _anprControllerService.CreateAnprRecord(anprRecord, userId);
 
-        using (var transaction = _context.Database.BeginTransaction())
-        {
-            try
-            {
-                _context.AnprRecords.Add(anprRecord);
-                await _context.SaveChangesAsync();
-
-                _ = _context.AnprRecordUploadUsers.Add(new AnprRecordUploadUser 
-                { 
-                    AnprRecordId = anprRecord.Id,
-                    UploadUserId = userId 
-                });
-                await _context.SaveChangesAsync();
-                
-                transaction.Commit();
-            }
-            catch(Exception ex)
-            {
-                transaction.Rollback();
-                _logger.LogError(ex, "An error occurred while saving the record.");
-                throw;
-            }
-        }
-
-        return CreatedAtAction("GetAnprRecord", new { id = anprRecord.Id }, anprRecord);
+        return CreatedAtAction("GetAnprRecord", new { id = result.Id }, result);
     }
 }
