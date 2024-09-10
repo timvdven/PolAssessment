@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+COPY PolAssessment/Common.Lib/Common.Lib.csproj Common.Lib/
+COPY PolAssessment/AnprFrontEnd.WebApi/AnprFrontEnd.WebApi.csproj AnprFrontEnd.WebApi/
+
+RUN dotnet restore Common.Lib/Common.Lib.csproj
+RUN dotnet restore AnprFrontEnd.WebApi/AnprFrontEnd.WebApi.csproj
+
+COPY PolAssessment/Common.Lib/ Common.Lib/
+COPY PolAssessment/AnprFrontEnd.WebApi/ AnprFrontEnd.WebApi/
+
+RUN dotnet build AnprFrontEnd.WebApi/AnprFrontEnd.WebApi.csproj -c Release -o /app
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app .
+
+ENTRYPOINT ["dotnet", "PolAssessment.AnprFrontEnd.WebApi.dll"]
+
+# docker build  -f Dockerfile.AnprFrontEnd.WebApi -t anpr-frontend-webapi-image .

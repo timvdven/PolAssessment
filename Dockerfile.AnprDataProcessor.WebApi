@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY PolAssessment/Common.Lib/Common.Lib.csproj Common.Lib/
+COPY PolAssessment/AnprDataProcessor.WebApi/AnprDataProcessor.WebApi.csproj AnprDataProcessor.WebApi/
+
+RUN dotnet restore Common.Lib/Common.Lib.csproj
+RUN dotnet restore AnprDataProcessor.WebApi/AnprDataProcessor.WebApi.csproj
+
+COPY PolAssessment/Common.Lib/ Common.Lib/
+COPY PolAssessment/AnprDataProcessor.WebApi/ AnprDataProcessor.WebApi/
+
+RUN dotnet build AnprDataProcessor.WebApi/AnprDataProcessor.WebApi.csproj -c Release -o /app
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app .
+
+ENTRYPOINT ["dotnet", "PolAssessment.AnprDataProcessor.WebApi.dll"]
+
+# docker build  -f Dockerfile.AnprDataProcessor.WebApi -t anpr-dataprocessor-webapi-image .

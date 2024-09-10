@@ -1,13 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using NUnit.Framework.Internal;
-using PolAssessment.AnprDataProcessor.Services;
-using PolAssessment.Shared.Configuration;
-using PolAssessment.Shared.Models;
+using PolAssessment.AnprDataProcessor.WebApi.Services;
+using PolAssessment.Common.Lib.Configuration;
+using PolAssessment.Common.Lib.Models;
 
 namespace AnprDataProcessor.Tests.Services;
 

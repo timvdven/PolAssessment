@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AnprEnricher\AnprEnricher.csproj" />
+    <ProjectReference Include="..\AnprEnricher.App\AnprEnricher.App.csproj" />
   </ItemGroup>
 
 </Project>

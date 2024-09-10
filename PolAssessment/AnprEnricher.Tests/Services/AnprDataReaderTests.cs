@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using PolAssessment.AnprEnricher.Configuration;
-using PolAssessment.AnprEnricher.Services;
+using PolAssessment.AnprEnricher.App.Configuration;
+using PolAssessment.AnprEnricher.App.Services;
 
 namespace AnprEnricher.Tests.Services;
 

@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockQueryable;
 using Moq;
-using PolAssessment.AnprDataProcessor.DbContexts;
-using PolAssessment.AnprDataProcessor.Services;
-using PolAssessment.Shared.Models;
-using PolAssessment.Shared.Models.DataProcessor;
-using PolAssessment.Shared.Services;
+using PolAssessment.AnprDataProcessor.WebApi.DbContexts;
+using PolAssessment.AnprDataProcessor.WebApi.Services;
+using PolAssessment.Common.Lib.Models;
+using PolAssessment.Common.Lib.Models.DataProcessor;
+using PolAssessment.Common.Lib.Services;
 
 namespace AnprDataProcessor.Tests.Services;
 
