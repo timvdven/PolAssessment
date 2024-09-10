@@ -1,4 +1,4 @@
 # Tests
 
-- [Back to main](../../README.md)
-
+- [Main README](../../README.md)
+- [Architecture README](./README.md)

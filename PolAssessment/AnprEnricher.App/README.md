@@ -2,7 +2,8 @@
 AnprEnricher is a .NET console project within the solution called PolAssessment.
 
 Other docs:
-- [Back to main README](../README.md)
+- [Main README](../../README.md)
+- [Architevture README](../../DOCS/ARCHITECTURE/README.md)
 
 ## Description
 This system:
@@ -17,9 +18,9 @@ This system:
 title: System Overview
 ---
 graph TD;
-    subgraph Unpack
+    subgraph Unpack dropped files
       A([Main Folder])
-      B(IHotFolderWatcherTgz \n FolderWatcher : FileSystemWatcher)
+      B(IHotFolderWatcherTgz <br> FolderWatcher : FileSystemWatcher)
       C(TgzUnpacker)
 
       A -- set to monitor --> B
@@ -27,7 +28,7 @@ graph TD;
     end
     subgraph Read ANPR
         D([Temporary Folder])
-        E(IHotFolderWatcherData \n FolderWatcher : FileSystemWatcher)
+        E(IHotFolderWatcherData <br> FolderWatcher : FileSystemWatcher)
         G(IAnprDataReader)
         F(IFileHandler)
 
@@ -38,15 +39,15 @@ graph TD;
     end
     subgraph Enrich ANPR
         H(IEnricherCollection)
-        I(IEnricher \n LocationDataEnricher)
-        J(IEnricher \n VehicleDataEnricher)
+        I(IEnricher<br>LocationDataEnricher)
+        J(IEnricher<br>VehicleDataEnricher)
 
         F -- on NewAnprDataRead --> H
         H -- invokes --> I
         H -- invokes --> J
     end
-    L(External Source \n Location Data)
-    M(External Source \n Vehicle Data)
+    L(External Source<br>Location Data)
+    M(External Source<br>Vehicle Data)
 
     I -- http call --> L
     J -- http call --> M
@@ -55,7 +56,7 @@ graph TD;
         H -- on FinishedEnrichedData --> Z
     end
 
-    NEXT(Next external system \n AnprDataProcessor)
+    NEXT(Next external system<br>AnprDataProcessor)
     Z -- http call --> NEXT
 ```
 
@@ -98,19 +99,19 @@ Run within Docker. Caution: on a Windows-based host the FileSystemWatcher will n
 
 Build the image with the following command in the solution directory, where the file Dockerfile-AnprEnricher is.
 ```sh
-docker build -f Dockerfile-AnprEnricher -t anpr-enricher-image .
+docker build -f Dockerfile-AnprEnricher -t anpr-enricher-app-image .
 ```
 
 #### Run application within Docker
 
 Run the application with bind mount. Replace /path/on/your/host with the path you want to bind on your host.
 ```sh
-docker run -v /path/on/your/host:/app/HotFolders anpr-enricher-image
+docker run -v /path/on/your/host:/app/HotFolders anpr-enricher-app-image
 ```
 
 or, when using a Windows-based host, just expose port 8080 in order for Filebrowser to be exposed.
 ```sh
-docker run -d -p 8080:8080 anpr-enricher-image
+docker run -d -p 8080:8080 anpr-enricher-app-image
 ```
 
 Instead of just running the application, please use the docker-compose option for the yml file.
@@ -122,7 +123,7 @@ docker network ls
 # if not, create it first:
 docker network create pol-assessment-network
 
-# Then compose the image
+# Then compose the project in which this image will be containerized
 docker-compose up -d
 ```
 
@@ -131,7 +132,7 @@ Drop a tgz-packed file with ANPR data in the hot folder and if all configuration
 
 When using a Windows-based host on Docker: instead of dropping the tgz-packed file in a folder, upload the tgz file using the Filebrowser.
 
-As for the ANPR data, use this JSON format:
+As for the ANPR data, use this JSON format, as described [here](../../DOCS/ARCHITECTURE/ANPR_JSON_FORMAT.md):
 ```json
 {
     "Plate": "X-123-XX",

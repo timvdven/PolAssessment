@@ -1,0 +1,39 @@
+# .NET Solution of PolAssessment
+
+The solution contains of
+- AnprDataProcessor.Test
+  - NUnit test project
+- [AnprDataProcessor.WebApi](./AnprDataProcessor.WebApi/README.md)
+  - .NET 8 Web API
+  - Responsible for:
+    - Communication with the database
+    - Processing valid data into the database
+    - Exposing Web API (using Swagger)
+    - Security:
+        - Only authorized entities are allowed to upload data
+        - Trace (log) uploads
+- [AnprEnricher.App](./AnprEnricher.App/README.md)
+  - .NET 8 Console App
+  - Responsible for:
+    - Unpacking tgz files
+    - Reading unpacked JSON files to ANPR data
+    - Enriching ANPR data (multiple enrichers)
+    - Sending enriched ANPR data to Data Processor
+- AnprEnricher.Test
+  - NUnit test project
+- AnprFrontEnd.Test
+  - NUnit test project
+- [AnprFrontEnd.WebApi](./AnprFrontEnd.WebApi/README.md)
+  - .NET 8 Web API
+  - Responsible for:
+    - Communication with the database
+    - Processing authorized requests using database
+    - Exposing Web API (using Swagger)
+    - Security:
+        - Only authorized entities are allowed to use this API
+- [Common.Lib](./Common.Lib/README.md)
+  - .NET 8 Library
+  - Responsible for:
+    - Preventing code duplication
+ - Common.Test
+  - NUnit test project
