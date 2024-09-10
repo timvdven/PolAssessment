@@ -11,31 +11,26 @@
 - In short: it is a system that reads ANPR data from a hot folder and enriches this data using online APIs. Furthermore this data can be viewed in a web app.
 - The architecture can be found [here](DOCS/ARCHITECTURE/README.md).
 
+## Prerequisites
+Furthermore, you'll need:
+- [Geoapify API Key](#set-geoapify-api-key)
+- [Google Maps API Key](#set-google-maps-api-key)
+- [Test Data](./DataGenerator/README.md) (optional)
+
 ## Requirements
 If you want to host this entire solution on your machine, you should at least have:
+- .NET 8
+- Python 3
 - Docker (`docker` & `docker-compose`)
 - 2 GB free on your disk (if you'll be using the `docker-compose.yml` solution)
 - Modern day CPU power
 - Modern day amount of internal memory (times 2 if you'll be using `docker-compose.yml` solution)
   - At least 650 MB
 
-Please read the [Todos](DOCS/TODO.md)
-
 ## Installation
 This documentation describes two ways of installing the solution:
 - [Using Docker](DOCS/INSTALLATION/DOCKER.md)
 - [Install on local machine](DOCS/INSTALLATION/LOCAL.md)
-
-### Prerequisites
-Make sure you have installed on your machine:
-- .NET 8
-- Python 3
-- Docker (if you choose to run the solution on Docker containers)
-
-Furthermore, you'll need:
-- [Geoapify API Key](#set-geoapify-api-key)
-- [Google Maps API Key](#set-google-maps-api-key)
-- [Test Data](./DataGenerator/README.md)
 
 #### Set Geoapify API Key
 - Skip to the last bullet if you already possess a valid Geoapify API Key

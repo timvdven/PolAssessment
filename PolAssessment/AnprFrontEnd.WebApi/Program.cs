@@ -20,13 +20,6 @@ builder.Logging
     .AddDebug();
 
 builder.Services
-    .AddCors(x =>
-        x.AddPolicy("AllowSpecificOrigins", y => y
-            .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()!)
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials())
-    )
     .AddEndpointsApiExplorer()
     .RegisterSwagger("v1", "ANPR Web API")
 

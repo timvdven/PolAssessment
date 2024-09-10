@@ -1,6 +1,9 @@
 # .NET Solution of PolAssessment
 
-The solution contains of
+[Main README](../README.md)
+
+The .NET solution contains of:
+
 - AnprDataProcessor.Test
   - NUnit test project
 - [AnprDataProcessor.WebApi](./AnprDataProcessor.WebApi/README.md)
@@ -35,5 +38,39 @@ The solution contains of
   - .NET 8 Library
   - Responsible for:
     - Preventing code duplication
- - Common.Test
+- Common.Test
   - NUnit test project
+
+## Clean, Restore & Build
+In order to clean, restore & build the .NET solution, invoke:
+```sh
+dotnet clean
+dotnet restore
+dotnet build
+```
+
+## Test
+In order to run all test projects, invoke:
+```sh
+dotnet test
+```
+
+## Run
+
+Please consult the prerequisites and requirements prior to trying to run any project.
+
+From this level, you could either run each project separately, like:
+```sh
+dotnet AnprEnricher.App/bin/Debug/net8.0/PolAssessment.AnprEnricher.App.dll
+dotnet AnprDataProcessor.WebApi/bin/Debug/net8.0/PolAssessment.AnprDataProcessor.WebApi.dll
+dotnet AnprFrontEnd.WebApi/bin/Debug/net8.0/PolAssessment.AnprFrontEnd.WebApi.dll
+```
+
+or you could configure a webserver like IIS to host the two WebApis,
+or you could run the whole solution plus the static files and database in an Docker Compose project, which is the recommended way to go.
+
+### Docker
+Simply run this script at the root:
+```sh
+./rebuild_docker_images.sh
+```

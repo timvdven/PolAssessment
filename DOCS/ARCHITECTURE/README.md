@@ -33,12 +33,17 @@ flowchart TD;
     H["👤 Admin"]
     H --> G
     G --> D
+
+    J["💻  Python<br>Data Generator"]
+    J -->|builds random<br>json test files| F
 ```
 
 ### Zoom to subsystem:
 - [Python & NGINX Front End (builder)](../../AnprFrontEnd/README.md)
 - [.NET Front End Web API](../../PolAssessment/AnprFrontEnd.WebApi/README.md)
+- [Python Data Generator](../../DataGenerator/README.md)
 - [.NET ANPR Enricher App](../../PolAssessment/AnprEnricher.App/README.md)
 - [.NET Data Processor Web API](../../PolAssessment/AnprDataProcessor.WebApi/README.md)
-- [MariaDB](https://hub.docker.com/_/mariadb) (image: mariadb:lts)
-- [phpMyAdmin](https://hub.docker.com/_/phpmyadmin): (image: phpmyadmin:latest)
+- [MariaDB & phpMyAdmin](../../Database/README.md)
+  - [MariaDB](https://hub.docker.com/_/mariadb) (image: mariadb:lts)
+  - [phpMyAdmin](https://hub.docker.com/_/phpmyadmin): (image: phpmyadmin:latest)
