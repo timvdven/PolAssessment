@@ -7,10 +7,6 @@ def register(app):
     def home_route():
         return render_template('pages/app.jinja')
     
-    @app.route("/404/", methods=['GET'])
-    def not_found_route():
-        return render_template('pages/404.jinja')
-
     @app.route("/app/", methods=['GET'])
     @app.route("/app/<string:page>/", methods=['GET'])
     def app_route(page:str = None):

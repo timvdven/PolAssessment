@@ -11,12 +11,6 @@
 - In short: it is a system that reads ANPR data from a hot folder and enriches this data using online APIs. Furthermore this data can be viewed in a web app.
 - The architecture can be found [here](DOCS/ARCHITECTURE/README.md).
 
-## Prerequisites
-Furthermore, you'll need:
-- [Geoapify API Key](#set-geoapify-api-key)
-- [Google Maps API Key](#set-google-maps-api-key)
-- [Test Data](./DataGenerator/README.md) (optional)
-
 ## Requirements
 If you want to host this entire solution on your machine, you should at least have:
 - .NET 8
@@ -27,10 +21,11 @@ If you want to host this entire solution on your machine, you should at least ha
 - Modern day amount of internal memory (times 2 if you'll be using `docker-compose.yml` solution)
   - At least 650 MB
 
-## Installation
-This documentation describes two ways of installing the solution:
-- [Using Docker](DOCS/INSTALLATION/DOCKER.md)
-- [Install on local machine](DOCS/INSTALLATION/LOCAL.md)
+## Prerequisites
+Furthermore, you'll need:
+- [Geoapify API Key](#set-geoapify-api-key)
+- [Google Maps API Key](#set-google-maps-api-key)
+- [Test Data](./DataGenerator/README.md) (optional)
 
 #### Set Geoapify API Key
 - Skip to the last bullet if you already possess a valid Geoapify API Key
@@ -73,10 +68,27 @@ Which will:
 After successfully running the script, browse to the [ANPR Front End](http://localhost:5300/) page.
 Unless you changed the yml file, the Hotfolder should be found [here](/HotFolders/HotFolderTgz/) after initiation of the anpr-enricher-app.
 
+In the [docker-compose.yml](./docker-compose.yml) file, note all the `environment` settings. These settings are the configuration of the build: eachother's endpoints, connection strings, etc.
+
+More in-depth information on installing:
+- [Using Docker](DOCS/INSTALLATION/DOCKER.md)
+- [Install on local machine](DOCS/INSTALLATION/LOCAL.md)
+
 ## Usage
-If the anpr-enricher-app is running and bound to the correct hotfolder, just drop a tgz file containing a valid JSON in this folder and browse in de web app for the results. This solution also imports some pre-defined data in the database for testing purposes. A more detailed description of the usage with examples can be found [here](DOCS/USAGE/README.md).
+
+A more detailed description of the usage with examples can be found [here](DOCS/USAGE/README.md).
+
+In short:
+If the anpr-enricher-app is running and bound to the correct hotfolder, just drop a tgz file containing a valid JSON in this folder and browse in de web app for the results.
+
+Browse to the anpr-frontend's location. If its tcp\80 is mapped to tcp\5300, the ANPR Front End should be available at http://localhost:5300/.
+You will see:
+- Login screen: enter your credentials and log in.
+- Empty dashboard: optionally enter some filtering values and click on [Filter].
+- Dashboard + Google Map + markers: Each marker represents an enriched ANPR record. Clicking on such a marker will pop-up more enriched information on the original ANPR record.
+- Realtime update checked: will update the filter silently and will shown new markers in a different color.
 
 Prior to using this (or any other) solution in a production environment, please consult the recommendations [here](DOCS/RECOMMENDATIONS.md).
 
 ### Creation of test data
-The documentation on creating test data can be found in the separate Data Generator project, described [here](../DataGenerator/README.md).
+The documentation on creating test data can be found in the separate Data Generator project, described [here](./DataGenerator/README.md).
